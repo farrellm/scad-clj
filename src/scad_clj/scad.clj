@@ -13,10 +13,16 @@
 (defn write-constant [wrtr depth [name value]]
   (.write wrtr (str (indent depth) name " = " value ";\n")))
 
-(defn cylinder [& {:keys [h r]}]
-  `(:cylinder {:h ~h :r ~r}))
-(defn write-cylinder [wrtr depth [{h :h r :r}]]
-  (.write wrtr (str (indent depth) "cylinder (h=" h ", r=" r ", center=true);\n")))
+(defn cylinder [& {:keys [h r r1 r2]]
+  {:pre [(or (and (not (nil? r)) (nil? r1) (nil? r2))
+             (and (nil? r) (not (nil? r1)) (not (nil? r2))))]}
+  (if (nil? r)
+    `(:cylinder {:h ~h :r1 ~r1 :r2 ~r2})
+    `(:cylinder {:h ~h :r ~r})))
+(defn write-cylinder [wrtr depth [{h :h r :r r1 :r1 r2 :r2}]]
+  (if (nil? r)
+    (.write wrtr (str (indent depth) "cylinder (h=" h ", r1=" r1 ", r2=" r2 ", center=true);\n"))
+    (.write wrtr (str (indent depth) "cylinder (h=" h ", r=" r ", center=true);\n"))))
 
 (defn translate [[x y z] & block]
   `(:translate [~x ~y ~z] ~@block))
