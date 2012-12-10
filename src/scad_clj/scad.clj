@@ -32,6 +32,13 @@
   (doall (map #(write-expr wrtr (+ depth 1) %1) block))
   (.write wrtr (str (indent depth) "}\n")))
 
+(defn scale [[x y z] & block]
+  `(:scale [~x ~y ~z] ~@block))
+(defn write-scale [wrtr depth [[x y z] & block]]
+  (.write wrtr (str (indent depth) "scale ([" x "," y "," z "]) {\n"))
+  (doall (map #(write-expr wrtr (+ depth 1) %1) block))
+  (.write wrtr (str (indent depth) "}\n")))
+
 (defn union [ & block]
   `(:union  ~@block))
 (defn write-union [wrtr depth [ & block]]
@@ -76,6 +83,7 @@
 
    :translate write-translate
    :rotate write-rotate
+   :scale write-scale
 
    :union write-union
    :intersection write-intersection
