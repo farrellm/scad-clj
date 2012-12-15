@@ -94,6 +94,7 @@
 ;; modules
 (defmacro module [name args & block]
   `(do
+     (defn ~name [~@args] (list ':call '~name [~@args]))
      ~@(map (fn [x] `(def ~x '~x)) args)
      (let [r# (list :module '~name '~args ~@block)]
        ~@(map (fn [x] `(ns-unmap *ns* ~x)) args)
@@ -104,6 +105,9 @@
   (.write wrtr (str (indent depth) "module " name "(" (join " " args) ") {\n"))
   (doall (map #(write-expr wrtr (+ depth 1) %1) block))
   (.write wrtr (str (indent depth) "}\n"))
+  )
+(defn write-call [wrtr depth [name [& args]]]
+  (.write wrtr (str (indent depth) name "(" (join " " args) ");"))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -123,6 +127,7 @@
    :difference write-difference
 
    :module write-module
+   :call write-call 
    })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
