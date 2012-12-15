@@ -3,16 +3,24 @@
   (:use [clojure.string :only [join]])
   )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; forward declarations
 (declare write-expr)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; utility
 (defn indent [depth]
   (apply str (repeat depth "  ")))
 
-(defn constant [name value]
-  `(:constant ~name ~value))
+(defmacro constant [name value]
+  `(do
+     (def ~name '~name)
+     '(:constant ~name ~value)))
 (defn write-constant [wrtr depth [name value]]
   (.write wrtr (str (indent depth) name " = " value ";\n")))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; primitives
 (defn cylinder [& {:keys [h r r1 r2]}]
   {:pre [(or (and (not (nil? r)) (nil? r1) (nil? r2))
              (and (nil? r) (not (nil? r1)) (not (nil? r2))))]}
@@ -24,6 +32,13 @@
     (.write wrtr (str (indent depth) "cylinder (h=" h ", r1=" r1 ", r2=" r2 ", center=true);\n"))
     (.write wrtr (str (indent depth) "cylinder (h=" h ", r=" r ", center=true);\n"))))
 
+(defn sphere [& {:keys [r]}]
+  `(:sphere {:r ~r}))
+(defn write-sphere [wrtr depth [{r :r}]]
+  (.write wrtr (str (indent depth) "sphere (r=" r ", center=true);\n")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; operators
 (defn translate [[x y z] & block]
   `(:translate [~x ~y ~z] ~@block))
 (defn write-translate [wrtr depth [[x y z] & block]]
@@ -45,6 +60,8 @@
   (doall (map #(write-expr wrtr (+ depth 1) %1) block))
   (.write wrtr (str (indent depth) "}\n")))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; combinators
 (defn union [ & block]
   `(:union  ~@block))
 (defn write-union [wrtr depth [ & block]]
@@ -73,8 +90,15 @@
   (doall (map #(write-expr wrtr (+ depth 1) %1) block))
   (.write wrtr (str (indent depth) "}\n")))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; modules
 (defmacro module [name args & block]
-  `(list :module '~name '~args ~@block))
+  `(do
+     ~@(map (fn [x] `(def ~x '~x)) args)
+     (let [r# (list :module '~name '~args ~@block)]
+       ~@(map (fn [x] `(ns-unmap *ns* ~x)) args)
+       r#)
+     ))
 
 (defn write-module [wrtr depth [name args & block]]
   (.write wrtr (str (indent depth) "module " name "(" (join " " args) ") {\n"))
@@ -82,10 +106,12 @@
   (.write wrtr (str (indent depth) "}\n"))
   )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def form-writer
   {:constant write-constant
 
    :cylinder write-cylinder
+   :sphere write-sphere
 
    :translate write-translate
    :rotate write-rotate
@@ -99,6 +125,8 @@
    :module write-module
    })
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; output
 (defn write-expr [wrtr depth [form & args]]
   (apply (get form-writer form) (list wrtr depth args)))
 
