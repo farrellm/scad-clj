@@ -2,15 +2,17 @@
   (:use [scad-clj.scad]))
 
 (write-scad
-   "/home/mfarrell/things/clj/cage.scad"
-   (constant width 18)
-   (constant height width)
-   (sphere :r width)
-   (cylinder :r width :h 9)
-   (module mod [r]
-     (sphere :r r)
-     (cylinder :r 4 :h 2)
-     )
-   (mod 9)
+ "/home/mfarrell/things/clj/cage.scad"
+
+ (constant radius 10)
+ (constant height radius)
+
+ (sphere radius)
+ (cylinder radius 9)
+ (module mod [r]
+   (sphere r)
+   (cylinder 4 2)
    )
+ (mod 9)
+ )
 
