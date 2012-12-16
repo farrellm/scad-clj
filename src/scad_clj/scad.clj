@@ -21,6 +21,19 @@
   (.write wrtr (str (indent depth) name " = " value ";\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; math
+;; (defn s+ [& args]
+;;   `(:math-infix + [~@args]))
+;; (defn s- [& args]
+;;   `(:math-infix - [~@args]))
+;; (defn s* [& args]
+;;   `(:math-infix * [~@args]))
+;; (defn sdiv [& args]
+;;   `(:math-infix / [~@args]))
+;; (defn eval-math-infix [op [& args]]
+;;   (join args op))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; primitives
 (defn cylinder [rs h]
   (match [rs]
@@ -52,9 +65,9 @@
   (.write wrtr (str (indent depth) "}\n")))
 
 (defn rotate [[a [x y z]] & block]
-  `(:rotate [~x ~y ~z] ~@block))
-(defn write-rotate [wrtr depth [[x y z] & block]]
-  (.write wrtr (str (indent depth) "rotate ([" x "," y "," z "]) {\n"))
+  `(:rotate [~a [~x ~y ~z]] ~@block))
+(defn write-rotate [wrtr depth [[a [x y z]] & block]]
+  (.write wrtr (str (indent depth) "rotate (a=" a " v=[" x "," y "," z "]) {\n"))
   (doall (map #(write-expr wrtr (+ depth 1) %1) block))
   (.write wrtr (str (indent depth) "}\n")))
 
@@ -147,9 +160,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; output
 (defn write-expr [wrtr depth [form & args]]
-  (apply (get form-writer form) (list wrtr depth args)))
+  (if (keyword? form)
+    (apply (get form-writer form) (list wrtr depth args))
+    (write-list wrtr depth (cons form args))
+    ))
+
+(defn write-list [wrtr depth list]
+  (doall (map #(write-expr wrtr depth %1) list)))
 
 (defn write-scad [path & block]
   (with-open [wrtr (writer path)]
-    (doall (map #(write-expr wrtr 0 %1) block))))
+    (write-list wrtr 0 block)))
 
