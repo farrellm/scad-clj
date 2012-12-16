@@ -1,6 +1,7 @@
 (ns scad-clj.scad
   (:use [clojure.java.io :only [writer]])
   (:use [clojure.string :only [join]])
+  (:use [clojure.core.match :only (match)])
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -21,21 +22,25 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; primitives
-(defn cylinder [& {:keys [h r r1 r2]}]
-  {:pre [(or (and (not (nil? r)) (nil? r1) (nil? r2))
-             (and (nil? r) (not (nil? r1)) (not (nil? r2))))]}
-  (if (nil? r)
-    `(:cylinder {:h ~h :r1 ~r1 :r2 ~r2})
-    `(:cylinder {:h ~h :r ~r})))
+(defn cylinder [rs h]
+  (match [rs]
+    [[r1 r2]] `(:cylinder {:h ~h :r1 ~r1 :r2 ~r2})
+    [r] `(:cylinder {:h ~h :r ~r} ~r)
+    ))
 (defn write-cylinder [wrtr depth [{h :h r :r r1 :r1 r2 :r2}]]
   (if (nil? r)
     (.write wrtr (str (indent depth) "cylinder (h=" h ", r1=" r1 ", r2=" r2 ", center=true);\n"))
     (.write wrtr (str (indent depth) "cylinder (h=" h ", r=" r ", center=true);\n"))))
 
-(defn sphere [& {:keys [r]}]
+(defn sphere [r]
   `(:sphere {:r ~r}))
 (defn write-sphere [wrtr depth [{r :r}]]
   (.write wrtr (str (indent depth) "sphere (r=" r ", center=true);\n")))
+
+(defn cube [x y z]
+  `(:cube {:x ~x :y ~y :z ~z}))
+(defn write-cube [wrtr depth [{x :x y :y z :z}]]
+  (.write wrtr (str (indent depth) "cube(x=" x ", y=" y ", z=" z ", center=true);\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; operators
@@ -102,9 +107,9 @@
      ))
 
 (defn write-module [wrtr depth [name args & block]]
-  (.write wrtr (str (indent depth) "module " name "(" (join " " args) ") {\n"))
+  (.write wrtr (str (indent depth) "\nmodule " name "(" (join " " args) ") {\n"))
   (doall (map #(write-expr wrtr (+ depth 1) %1) block))
-  (.write wrtr (str (indent depth) "}\n"))
+  (.write wrtr (str (indent depth) "}\n\n"))
   )
 (defn write-call [wrtr depth [name [& args]]]
   (.write wrtr (str (indent depth) name "(" (join " " args) ");"))
