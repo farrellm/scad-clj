@@ -51,7 +51,7 @@
   (doall (map #(write-expr wrtr (+ depth 1) %1) block))
   (.write wrtr (str (indent depth) "}\n")))
 
-(defn rotate [[x y z] & block]
+(defn rotate [[a [x y z]] & block]
   `(:rotate [~x ~y ~z] ~@block))
 (defn write-rotate [wrtr depth [[x y z] & block]]
   (.write wrtr (str (indent depth) "rotate ([" x "," y "," z "]) {\n"))
@@ -109,7 +109,7 @@
      (defn ~name [~@args] (list ':call '~name [~@args]))
      ~@(map (fn [x] `(def ~x '~x)) args)
      (let [r# (list :module '~name '~args ~@block)]
-       ~@(map (fn [x] `(ns-unmap *ns* ~x)) args)
+       ~@(map (fn [x] `(ns-unmap *ns* '~x)) args)
        r#)
      ))
 
@@ -119,7 +119,7 @@
   (.write wrtr (str (indent depth) "}\n\n"))
   )
 (defn write-call [wrtr depth [name [& args]]]
-  (.write wrtr (str (indent depth) name "(" (join " " args) ");"))
+  (.write wrtr (str (indent depth) name "(" (join " " args) ");\n"))
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
