@@ -65,6 +65,13 @@
   (doall (map #(write-expr wrtr (+ depth 1) %1) block))
   (.write wrtr (str (indent depth) "}\n")))
 
+(defn mirror [[x y z] & block]
+  `(:mirror [~x ~y ~z] ~@block))
+(defn write-mirror [wrtr depth [[x y z] & block]]
+  (.write wrtr (str (indent depth) "mirror ([" x "," y "," z "]) {\n"))
+  (doall (map #(write-expr wrtr (+ depth 1) %1) block))
+  (.write wrtr (str (indent depth) "}\n")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; combinators
 (defn union [ & block]
@@ -121,10 +128,12 @@
 
    :cylinder write-cylinder
    :sphere write-sphere
+   :cube write-cube
 
    :translate write-translate
    :rotate write-rotate
    :scale write-scale
+   :mirror write-mirror
 
    :union write-union
    :intersection write-intersection
