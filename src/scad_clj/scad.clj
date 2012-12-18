@@ -34,6 +34,23 @@
 ;;   (join args op))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; mesh
+(defn fa! [x]
+  `(:fa ~x))
+(defn write-fa [wrtr depth x]
+  (.write wrtr (str (indent depth) "$fa = " x ";\n")))
+
+(defn fn! [x]
+  `(:fn ~x))
+(defn write-fn [wrtr depth x]
+  (.write wrtr (str (indent depth) "$fn = " x ";\n")))
+
+(defn fs! [x]
+  `(:fs ~x))
+(defn write-fs [wrtr depth x]
+  (.write wrtr (str (indent depth) "$fs = " x ";\n")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; primitives
 (defn cylinder [rs h]
   (match [rs]
@@ -67,7 +84,7 @@
 (defn rotate [[a [x y z]] & block]
   `(:rotate [~a [~x ~y ~z]] ~@block))
 (defn write-rotate [wrtr depth [[a [x y z]] & block]]
-  (.write wrtr (str (indent depth) "rotate (a=" a " v=[" x "," y "," z "]) {\n"))
+  (.write wrtr (str (indent depth) "rotate (a=" a ", v=[" x "," y "," z "]) {\n"))
   (doall (map #(write-expr wrtr (+ depth 1) %1) block))
   (.write wrtr (str (indent depth) "}\n")))
 
@@ -137,7 +154,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def form-writer
-  {:constant write-constant
+  {
+   :constant write-constant
+
+   :fa write-fa 
+   :fn write-fn 
+   :fs write-fs 
 
    :cylinder write-cylinder
    :sphere write-sphere
