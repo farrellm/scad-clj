@@ -1,6 +1,6 @@
 (ns scad-clj.designs.cage
-  (:use [scal-clj.scad])
-  (:use [scal-clj.model])
+  (:use [scad-clj.scad])
+  (:use [scad-clj.model])
   )
 
 (def pi Math/PI)
@@ -42,7 +42,7 @@
         (sphere radius)))
      )))
 
-(scad/write-scad-to-file "/home/mfarrell/things/clj/cage.scad" model)
+(write-scad-to-file "/home/mfarrell/things/clj/cage.scad" model)
 
   
 
