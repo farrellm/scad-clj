@@ -18,15 +18,6 @@
   (flatten (map #(write-expr (+ depth 1) %1) block)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; constants
-(defmacro constant [name value]
-  `(do
-     (def ~name '~name)
-     '(:constant ~name ~value)))
-(defn write-constant [wrtr depth [name value]]
-  (list (indent depth) name " = " value ";\n"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mesh
 (defn fa! [x]
   `(:fa ~x))
@@ -132,26 +123,6 @@
    (list (indent depth) "difference () {\n")
    (map #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; modules
-(defmacro module [name args & block]
-  `(do
-     (defn ~name [~@args] (list ':call '~name [~@args]))
-     ~@(map (fn [x] `(def ~x '~x)) args)
-     (let [r# (list :module '~name '~args ~@block)]
-       ~@(map (fn [x] `(ns-unmap *ns* '~x)) args)
-       r#)
-     ))
-
-(defn write-module [depth [name args & block]]
-  (list
-   (list (indent depth) "\nmodule " name "(" (join " " args) ") {\n")
-   (map #(write-expr (+ depth 1) %1) block)
-   (list (indent depth) "}\n\n")))
-(defn write-call [depth [name [& args]]]
-  (list (indent depth) name "(" (join " " args) ");\n")
-  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def form-writer
