@@ -5,11 +5,6 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; forward declarations
-(declare write-expr)
-(declare write-list)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; utility
 (defn indent [depth]
   (apply str (repeat depth "  ")))
@@ -18,50 +13,62 @@
   (flatten (map #(write-expr (+ depth 1) %1) block)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; multimethod
+(defmulti write-expr
+  (fn [depth [form & args]]
+    (if (keyword? form) form :list)))
+
+(defmethod write-expr :default [depth [form & args]]
+  `("//(" ~form ~args ")"))
+
+(defmethod write-expr :list [depth [& args]]
+  (map #(write-expr depth %1) args))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mesh
-(defn write-fa [depth x]
+(defmethod write-expr :fa [depth [form x]]
   (list (indent depth) "$fa = " x ";\n"))
 
-(defn write-fn [depth x]
+(defmethod write-expr :fn [depth [form x]]
   (list (indent depth) "$fn = " x ";\n"))
 
-(defn write-fs [depth x]
+(defmethod write-expr :fs [depth [form x]]
   (list (indent depth) "$fs = " x ";\n"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; primitives
-(defn write-cylinder [depth [{h :h r :r r1 :r1 r2 :r2}]]
+(defmethod write-expr :cylinder [depth [form {h :h r :r r1 :r1 r2 :r2}]]
   (if (nil? r)
     (list (indent depth) "cylinder (h=" h ", r1=" r1 ", r2=" r2 ", center=true);\n")
     (list (indent depth) "cylinder (h=" h ", r=" r ", center=true);\n")))
 
-(defn write-sphere [depth [{r :r}]]
+(defmethod write-expr :sphere [depth [form {r :r}]]
   (list (indent depth) "sphere (r=" r ", center=true);\n"))
 
-(defn write-cube [depth [{x :x y :y z :z}]]
+(defmethod write-expr :cube [depth [form {x :x y :y z :z}]]
   (list (indent depth) "cube(x=" x ", y=" y ", z=" z ", center=true);\n"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; operators
-(defn write-translate [depth [[x y z] & block]]
+(defmethod write-expr :translate [depth [form [x y z] & block]]
   (list
    (list (indent depth) "translate ([" x "," y "," z "]) {\n")
    (map #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
-(defn write-rotate [depth [[a [x y z]] & block]]
+(defmethod write-expr :rotate [depth [form [a [x y z]] & block]]
   (list
    (list (indent depth) "rotate (a=" (/ (* a 180) Math/PI) ", v=[" x "," y "," z "]) {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
 
-(defn write-scale [depth [[x y z] & block]]
+(defmethod write-expr :scale [depth [form [x y z] & block]]
   (list
    (list (indent depth) "scale ([" x "," y "," z "]) {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
 
-(defn write-mirror [depth [[x y z] & block]]
+(defmethod write-expr :mirror [depth [form [x y z] & block]]
   (list
    (list (indent depth) "mirror ([" x "," y "," z "]) {\n")
    (write-block depth block)
@@ -69,65 +76,35 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; combinators
-(defn write-union [depth [ & block]]
+(defmethod write-expr :union [depth [form & block]]
   (list
    (list (indent depth) "union () {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
 
-(defn write-intersection [depth [ & block]]
+(defmethod write-expr :intersection [depth [form & block]]
   (list
    (list (indent depth) "intersection () {\n")
    (map #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
-(defn write-hull [depth [ & block]]
+(defmethod write-expr :hull [depth [form & block]]
   (list
    (list (indent depth) "hull () {\n")
    (map #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
-(defn write-difference [depth [ & block]]
+(defmethod write-expr :difference [depth [form & block]]
   (list
    (list (indent depth) "difference () {\n")
    (map #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def form-writer
-  {
-   :fa write-fa 
-   :fn write-fn 
-   :fs write-fs 
-
-   :cylinder write-cylinder
-   :sphere write-sphere
-   :cube write-cube
-
-   :translate write-translate
-   :rotate write-rotate
-   :scale write-scale
-   :mirror write-mirror
-
-   :union write-union
-   :intersection write-intersection
-   :hull write-hull
-   :difference write-difference
-   })
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; output
-(defn write-expr [depth [form & args]]
-  (if (keyword? form)
-    (apply (get form-writer form) (list depth args))
-    (write-list depth (cons form args))
-    ))
-
-(defn write-list [depth list]
-  (map #(write-expr depth %1) list))
 
 (defn write-scad [& block]
-  (apply str (flatten (write-list 0 block))))
+  (apply str (flatten (write-expr 0 block))))
 
 (defn write-scad-to-file [path & block]
   (with-open [wrtr (writer path)]
