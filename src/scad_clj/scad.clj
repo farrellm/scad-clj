@@ -80,7 +80,6 @@
 (defn write-rotate [depth [[a [x y z]] & block]]
   (list
    (list (indent depth) "rotate (a=" a ", v=[" x "," y "," z "]) {\n")
-   ;;(apply str (map #(write-expr (+ depth 1) %1) block))
    (write-block depth block)
    (list (indent depth) "}\n")))
 
@@ -89,7 +88,6 @@
 (defn write-scale [depth [[x y z] & block]]
   (list
    (list (indent depth) "scale ([" x "," y "," z "]) {\n")
-   ;;(apply str (map #(write-expr (+ depth 1) %1) block))
    (write-block depth block)
    (list (indent depth) "}\n")))
 
@@ -98,7 +96,6 @@
 (defn write-mirror [depth [[x y z] & block]]
   (list
    (list (indent depth) "mirror ([" x "," y "," z "]) {\n")
-   ;;(apply str (map #(write-expr (+ depth 1) %1) block))
    (write-block depth block)
    (list (indent depth) "}\n")))
 
@@ -109,7 +106,6 @@
 (defn write-union [depth [ & block]]
   (list
    (list (indent depth) "union () {\n")
-   ;;(apply str (flatten (map #(write-expr (+ depth 1) %1) block)))
    (write-block depth block)
    (list (indent depth) "}\n")))
 
