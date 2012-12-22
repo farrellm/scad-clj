@@ -7,48 +7,41 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; forward declarations
 (declare write-expr)
+(declare write-list)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; utility
 (defn indent [depth]
   (apply str (repeat depth "  ")))
 
+(defn write-block [depth block]
+  (flatten (map #(write-expr (+ depth 1) %1) block)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; constants
 (defmacro constant [name value]
   `(do
      (def ~name '~name)
      '(:constant ~name ~value)))
 (defn write-constant [wrtr depth [name value]]
-  (.write wrtr (str (indent depth) name " = " value ";\n")))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; math
-;; (defn s+ [& args]
-;;   `(:math-infix + [~@args]))
-;; (defn s- [& args]
-;;   `(:math-infix - [~@args]))
-;; (defn s* [& args]
-;;   `(:math-infix * [~@args]))
-;; (defn sdiv [& args]
-;;   `(:math-infix / [~@args]))
-;; (defn eval-math-infix [op [& args]]
-;;   (join args op))
+  (list (indent depth) name " = " value ";\n"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mesh
 (defn fa! [x]
   `(:fa ~x))
-(defn write-fa [wrtr depth x]
-  (.write wrtr (str (indent depth) "$fa = " x ";\n")))
+(defn write-fa [depth x]
+  (list (indent depth) "$fa = " x ";\n"))
 
 (defn fn! [x]
   `(:fn ~x))
-(defn write-fn [wrtr depth x]
-  (.write wrtr (str (indent depth) "$fn = " x ";\n")))
+(defn write-fn [depth x]
+  (list (indent depth) "$fn = " x ";\n"))
 
 (defn fs! [x]
   `(:fs ~x))
-(defn write-fs [wrtr depth x]
-  (.write wrtr (str (indent depth) "$fs = " x ";\n")))
+(defn write-fs [depth x]
+  (list (indent depth) "$fs = " x ";\n"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; primitives
@@ -57,80 +50,92 @@
     [[r1 r2]] `(:cylinder {:h ~h :r1 ~r1 :r2 ~r2})
     [r] `(:cylinder {:h ~h :r ~r} ~r)
     ))
-(defn write-cylinder [wrtr depth [{h :h r :r r1 :r1 r2 :r2}]]
+(defn write-cylinder [depth [{h :h r :r r1 :r1 r2 :r2}]]
   (if (nil? r)
-    (.write wrtr (str (indent depth) "cylinder (h=" h ", r1=" r1 ", r2=" r2 ", center=true);\n"))
-    (.write wrtr (str (indent depth) "cylinder (h=" h ", r=" r ", center=true);\n"))))
+    (list (indent depth) "cylinder (h=" h ", r1=" r1 ", r2=" r2 ", center=true);\n")
+    (list (indent depth) "cylinder (h=" h ", r=" r ", center=true);\n")))
 
 (defn sphere [r]
   `(:sphere {:r ~r}))
-(defn write-sphere [wrtr depth [{r :r}]]
-  (.write wrtr (str (indent depth) "sphere (r=" r ", center=true);\n")))
+(defn write-sphere [depth [{r :r}]]
+  (list (indent depth) "sphere (r=" r ", center=true);\n"))
 
 (defn cube [x y z]
   `(:cube {:x ~x :y ~y :z ~z}))
-(defn write-cube [wrtr depth [{x :x y :y z :z}]]
-  (.write wrtr (str (indent depth) "cube(x=" x ", y=" y ", z=" z ", center=true);\n")))
+(defn write-cube [depth [{x :x y :y z :z}]]
+  (list (indent depth) "cube(x=" x ", y=" y ", z=" z ", center=true);\n"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; operators
 (defn translate [[x y z] & block]
   `(:translate [~x ~y ~z] ~@block))
-(defn write-translate [wrtr depth [[x y z] & block]]
-  (.write wrtr (str (indent depth) "translate ([" x "," y "," z "]) {\n"))
-  (doall (map #(write-expr wrtr (+ depth 1) %1) block))
-  (.write wrtr (str (indent depth) "}\n")))
+(defn write-translate [depth [[x y z] & block]]
+  (list
+   (list (indent depth) "translate ([" x "," y "," z "]) {\n")
+   (map #(write-expr (+ depth 1) %1) block)
+   (list (indent depth) "}\n")))
 
-(defn rotate [[a [x y z]] & block]
+(defn rotate [a [x y z] & block]
   `(:rotate [~a [~x ~y ~z]] ~@block))
-(defn write-rotate [wrtr depth [[a [x y z]] & block]]
-  (.write wrtr (str (indent depth) "rotate (a=" a ", v=[" x "," y "," z "]) {\n"))
-  (doall (map #(write-expr wrtr (+ depth 1) %1) block))
-  (.write wrtr (str (indent depth) "}\n")))
+(defn write-rotate [depth [[a [x y z]] & block]]
+  (list
+   (list (indent depth) "rotate (a=" a ", v=[" x "," y "," z "]) {\n")
+   ;;(apply str (map #(write-expr (+ depth 1) %1) block))
+   (write-block depth block)
+   (list (indent depth) "}\n")))
 
 (defn scale [[x y z] & block]
   `(:scale [~x ~y ~z] ~@block))
-(defn write-scale [wrtr depth [[x y z] & block]]
-  (.write wrtr (str (indent depth) "scale ([" x "," y "," z "]) {\n"))
-  (doall (map #(write-expr wrtr (+ depth 1) %1) block))
-  (.write wrtr (str (indent depth) "}\n")))
+(defn write-scale [depth [[x y z] & block]]
+  (list
+   (list (indent depth) "scale ([" x "," y "," z "]) {\n")
+   ;;(apply str (map #(write-expr (+ depth 1) %1) block))
+   (write-block depth block)
+   (list (indent depth) "}\n")))
 
 (defn mirror [[x y z] & block]
   `(:mirror [~x ~y ~z] ~@block))
-(defn write-mirror [wrtr depth [[x y z] & block]]
-  (.write wrtr (str (indent depth) "mirror ([" x "," y "," z "]) {\n"))
-  (doall (map #(write-expr wrtr (+ depth 1) %1) block))
-  (.write wrtr (str (indent depth) "}\n")))
+(defn write-mirror [depth [[x y z] & block]]
+  (list
+   (list (indent depth) "mirror ([" x "," y "," z "]) {\n")
+   ;;(apply str (map #(write-expr (+ depth 1) %1) block))
+   (write-block depth block)
+   (list (indent depth) "}\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; combinators
 (defn union [ & block]
   `(:union  ~@block))
-(defn write-union [wrtr depth [ & block]]
-  (.write wrtr (str (indent depth) "union () {\n"))
-  (doall (map #(write-expr wrtr (+ depth 1) %1) block))
-  (.write wrtr (str (indent depth) "}\n")))
+(defn write-union [depth [ & block]]
+  (list
+   (list (indent depth) "union () {\n")
+   ;;(apply str (flatten (map #(write-expr (+ depth 1) %1) block)))
+   (write-block depth block)
+   (list (indent depth) "}\n")))
 
 (defn intersection [ & block]
   `(:intersection  ~@block))
-(defn write-intersection [wrtr depth [ & block]]
-  (.write wrtr (str (indent depth) "intersection () {\n"))
-  (doall (map #(write-expr wrtr (+ depth 1) %1) block))
-  (.write wrtr (str (indent depth) "}\n")))
+(defn write-intersection [depth [ & block]]
+  (list
+   (list (indent depth) "intersection () {\n")
+   (map #(write-expr (+ depth 1) %1) block)
+   (list (indent depth) "}\n")))
 
 (defn hull [ & block]
   `(:hull  ~@block))
-(defn write-hull [wrtr depth [ & block]]
-  (.write wrtr (str (indent depth) "hull () {\n"))
-  (doall (map #(write-expr wrtr (+ depth 1) %1) block))
-  (.write wrtr (str (indent depth) "}\n")))
+(defn write-hull [depth [ & block]]
+  (list
+   (list (indent depth) "hull () {\n")
+   (map #(write-expr (+ depth 1) %1) block)
+   (list (indent depth) "}\n")))
 
 (defn difference [ & block]
   `(:difference  ~@block))
-(defn write-difference [wrtr depth [ & block]]
-  (.write wrtr (str (indent depth) "difference () {\n"))
-  (doall (map #(write-expr wrtr (+ depth 1) %1) block))
-  (.write wrtr (str (indent depth) "}\n")))
+(defn write-difference [depth [ & block]]
+  (list
+   (list (indent depth) "difference () {\n")
+   (map #(write-expr (+ depth 1) %1) block)
+   (list (indent depth) "}\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; modules
@@ -143,13 +148,13 @@
        r#)
      ))
 
-(defn write-module [wrtr depth [name args & block]]
-  (.write wrtr (str (indent depth) "\nmodule " name "(" (join " " args) ") {\n"))
-  (doall (map #(write-expr wrtr (+ depth 1) %1) block))
-  (.write wrtr (str (indent depth) "}\n\n"))
-  )
-(defn write-call [wrtr depth [name [& args]]]
-  (.write wrtr (str (indent depth) name "(" (join " " args) ");\n"))
+(defn write-module [depth [name args & block]]
+  (list
+   (list (indent depth) "\nmodule " name "(" (join " " args) ") {\n")
+   (map #(write-expr (+ depth 1) %1) block)
+   (list (indent depth) "}\n\n")))
+(defn write-call [depth [name [& args]]]
+  (list (indent depth) name "(" (join " " args) ");\n")
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -181,16 +186,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; output
-(defn write-expr [wrtr depth [form & args]]
+(defn write-expr [depth [form & args]]
   (if (keyword? form)
-    (apply (get form-writer form) (list wrtr depth args))
-    (write-list wrtr depth (cons form args))
+    (apply (get form-writer form) (list depth args))
+    (write-list depth (cons form args))
     ))
 
-(defn write-list [wrtr depth list]
-  (doall (map #(write-expr wrtr depth %1) list)))
+(defn write-list [depth list]
+  (map #(write-expr depth %1) list))
 
-(defn write-scad [path & block]
+(defn write-scad [& block]
+  (apply str (flatten (write-list 0 block))))
+
+(defn write-scad-to-file [path & block]
   (with-open [wrtr (writer path)]
-    (write-list wrtr 0 block)))
-
+    (.write wrtr (write-scad block))))
