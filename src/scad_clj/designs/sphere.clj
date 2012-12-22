@@ -1,5 +1,7 @@
 (ns scad-clj.designs.cage
-  (:use [scad-clj.scad]))
+  (:use [scad-clj.scad])
+  (:use [scad-clj.model])
+  )
 
 (def model
   (list
@@ -12,5 +14,4 @@
        (sphere radius)))
    ))
 
-(with-open [wrtr (writer "/home/mfarrell/things/clj/sphere.scad")]
-  (.write wrtr (write-scad ast)))
+(write-scad-to-file "/home/mfarrell/things/clj/sphere.scad" model)
