@@ -5,14 +5,6 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; utility
-(defn indent [depth]
-  (apply str (repeat depth "  ")))
-
-(defn write-block [depth block]
-  (flatten (map #(write-expr (+ depth 1) %1) block)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; multimethod
 (defmulti write-expr
   (fn [depth [form & args]]
@@ -23,6 +15,14 @@
 
 (defmethod write-expr :list [depth [& args]]
   (map #(write-expr depth %1) args))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; utility
+(defn indent [depth]
+  (apply str (repeat depth "  ")))
+
+(defn write-block [depth block]
+  (flatten (map #(write-expr (+ depth 1) %1) block)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mesh
