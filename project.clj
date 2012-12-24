@@ -5,5 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/core.match "0.2.0-alpha11"]
-                 [org.clojars.nakkaya/jbullet "20101010"]]
+                 [org.clojars.nakkaya/jbullet "20101010"]
+                 [incanter/incanter-core "1.4.1"]
+                 [incanter/incanter-processing "1.3.0"]]
   :main scad-clj.core)
