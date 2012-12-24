@@ -1,4 +1,4 @@
-(ns scad-clj.designs.cage
+(ns scad-clj.designs.sphere
   (:use [scad-clj.scad])
   (:use [scad-clj.model])
   )
