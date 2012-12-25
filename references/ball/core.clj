@@ -1,14 +1,13 @@
-;;
 ;; ----------------------------------------------------------------------------
 ;; "THE BEER-WARE LICENSE" (Revision 42):
 ;; <nurullah@nakkaya.com> wrote this file. As long as you retain this notice you
 ;; can do whatever you want with this stuff. If we meet some day, and you think
 ;; this stuff is worth it, you can buy me a beer in return Nurullah Akkaya
 ;; ----------------------------------------------------------------------------
-;;
 
-;; Available at:
-;; http://nakkaya.com/2010/10/24/more-physics-with-clojure-jbullet-and-processing/
+;; Akkaya, Nurullah. "More Physics with Clojure, JBullet and Processing."
+;; Web log post. Nakkaya.com. N.p., Oct. 2010. Web. 24 Dec. 2012.
+;; <http://nakkaya.com/2010/10/24/more-physics-with-clojure-jbullet-and-processing/>.
 
 (ns ball.core
   (:use [incanter.core :only [view]])
