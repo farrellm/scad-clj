@@ -14,7 +14,7 @@
   `("//(" ~form ~args ")"))
 
 (defmethod write-expr :list [depth [& args]]
-  (map #(write-expr depth %1) args))
+  (mapcat #(write-expr depth %1) args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; utility
@@ -22,7 +22,7 @@
   (apply str (repeat depth "  ")))
 
 (defn write-block [depth block]
-  (flatten (map #(write-expr (+ depth 1) %1) block)))
+  (mapcat #(write-expr (+ depth 1) %1) block))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mesh
@@ -57,25 +57,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; operators
 (defmethod write-expr :translate [depth [form [x y z] & block]]
-  (list
+  (concat
    (list (indent depth) "translate ([" x "," y "," z "]) {\n")
-   (map #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :rotate [depth [form [a [x y z]] & block]]
-  (list
+  (concat
    (list (indent depth) "rotate (a=" (/ (* a 180) Math/PI) ", v=[" x "," y "," z "]) {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :scale [depth [form [x y z] & block]]
-  (list
+  (concat
    (list (indent depth) "scale ([" x "," y "," z "]) {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :mirror [depth [form [x y z] & block]]
-  (list
+  (concat
    (list (indent depth) "mirror ([" x "," y "," z "]) {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
@@ -83,35 +83,31 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; combinators
 (defmethod write-expr :union [depth [form & block]]
-  (list
+  (concat
    (list (indent depth) "union () {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :intersection [depth [form & block]]
-  (list
+  (concat
    (list (indent depth) "intersection () {\n")
-   (map #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :hull [depth [form & block]]
-  (list
+  (concat
    (list (indent depth) "hull () {\n")
-   (map #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :difference [depth [form & block]]
-  (list
+  (concat
    (list (indent depth) "difference () {\n")
-   (map #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; output
 
 (defn write-scad [& block]
-  (apply str (flatten (write-expr 0 block))))
-
-(defn write-scad-to-file [path & block]
-  (with-open [wrtr (writer path)]
-    (.write wrtr (write-scad block))))
+  (apply str (write-expr 0 block)))
