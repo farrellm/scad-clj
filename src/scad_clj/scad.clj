@@ -38,21 +38,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; primitives
 (defmethod write-expr :cylinder [depth [form {:keys [h r r1 r2 fa fn fs]}]]
-  (let [fargs (list (if (nil? fa) '() (str "$fa=" fa ", "))
-                    (if (nil? fn) '() (str "$fn=" fn ", "))
-                    (if (nil? fs) '() (str "$fs=" fs ", ")))]
+  (let [fargs (str (and fa (str "$fa=" fa ", "))
+                   (and fn (str "$fn=" fn ", "))
+                   (and fs (str "$fs=" fs ", ")))]
     (list (indent depth) "cylinder (" fargs "h=" h
           (if (nil? r) (list ", r1=" r1 ", r2=" r2) (list ", r=" r))
           ", center=true);\n")))
 
 (defmethod write-expr :sphere [depth [form {:keys [r fa fn fs]}]]
-  (let [fargs (list (if (nil? fa) '() (str "$fa=" fa ", "))
-                    (if (nil? fn) '() (str "$fn=" fn ", "))
-                    (if (nil? fs) '() (str "$fs=" fs ", ")))]
+  (let [fargs (str (and fa (str "$fa=" fa ", "))
+                   (and fn (str "$fn=" fn ", "))
+                   (and fs (str "$fs=" fs ", ")))]
     (list (indent depth) "sphere (" fargs "r=" r ", center=true);\n")))
 
 (defmethod write-expr :cube [depth [form {:keys [x y z]}]]
-  (list (indent depth) "cube(x=" x ", y=" y ", z=" z ", center=true);\n"))
+  (list (indent depth) "cube([" x ", " y ", " z "], center=true);\n"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; operators
