@@ -7,5 +7,4 @@
                  [org.clojure/core.match "0.2.0-alpha11"]
                  [org.clojars.nakkaya/jbullet "20101010"]
                  [incanter/incanter-core "1.4.1"]
-                 [incanter/incanter-processing "1.3.0"]]
-  :main scad-clj.core)
+                 [incanter/incanter-processing "1.3.0"]])
