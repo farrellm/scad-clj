@@ -41,9 +41,9 @@
   (let [fargs (str (and fa (str "$fa=" fa ", "))
                    (and fn (str "$fn=" fn ", "))
                    (and fs (str "$fs=" fs ", ")))]
-    (list (indent depth) "cylinder (" fargs "h=" h
-          (if (nil? r) (list ", r1=" r1 ", r2=" r2) (list ", r=" r))
-          ", center=true);\n")))
+    (concat `(~(indent depth) "cylinder (" ~fargs "h=" ~h)
+            (if (nil? r) (list ", r1=" r1 ", r2=" r2) (list ", r=" r))
+            `(", center=true);\n"))))
 
 (defmethod write-expr :sphere [depth [form {:keys [r fa fn fs]}]]
   (let [fargs (str (and fa (str "$fa=" fa ", "))
