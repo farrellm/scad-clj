@@ -4,7 +4,8 @@
   )
 
 (def model
-  (cube 1 2 3)
+  ;; (cube 1 2 3)
+  (sphere 10)
   )
 
-
+(render model)

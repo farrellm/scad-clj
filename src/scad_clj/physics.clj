@@ -18,7 +18,9 @@
                                        BoxShape
                                        SphereShape)))
 
-(defn world []
+(def ^:dynamic *world* nil)
+
+(defn make-world [gravity]
   (let [maxProxies 1024
         worldAabbMin (Vector3f. -10000 -10000 -10000)
         worldAabbMax (Vector3f.  10000  10000  10000)
@@ -28,10 +30,10 @@
            (AxisSweep3. worldAabbMin worldAabbMax maxProxies)
            (SequentialImpulseConstraintSolver.)
            cc)
-      (.setGravity (Vector3f. 0 -60 0)))))
+      (.setGravity (Vector3f. 0 gravity 0)))))
 
-(defn surface [world]
-  (let [shape (StaticPlaneShape. (Vector3f. 0 1 0)  0)
+(defn add-ground []
+  (let [shape (StaticPlaneShape. (Vector3f. 0 10 0)  0)
         motion-state (DefaultMotionState.
                        (doto (Transform.)
                          (-> .origin (.set (Vector3f. 0 0 0)))
@@ -39,10 +41,128 @@
         construction-info (RigidBodyConstructionInfo.
                            0 motion-state shape (Vector3f. 0 0 0))
         rigid-body (RigidBody. construction-info)]
-    (.addRigidBody world rigid-body)
+    (.addRigidBody *world* rigid-body)
     rigid-body))
 
-(defn box [world [x y]]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; multimethod
+(def ^:dynamic *translation* (Vector3f.))
+(def ^:dynamic *rotation* (Quat4f.))
+
+(def add-expr nil)
+(defmulti add-expr
+  (fn [[form & args]]
+    (if (keyword? form) form :list)))
+
+;; (defmethod add-expr :default [depth [form & args]]
+;;   (println (str "unknown directive " form))
+;;   '())
+
+(defmethod add-expr :list [& args]
+  (mapcat add-expr args))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; primitives
+(defmethod add-expr :sphere [[form {:keys [r fa fn fs]}]]
+  (let [fall-shape (SphereShape. r)
+        motion-state (DefaultMotionState.
+                       (doto (Transform.)
+                         (-> .origin (.set (Vector3f. 0 50 0)))
+                         (.setRotation (Quat4f. 0 0 0 1))))
+        mass 1
+        fall-inertia (doto (Vector3f. 0 0 0)
+                       #(.calculateLocalInertia fall-shape mass %1))
+        body-info (RigidBodyConstructionInfo. mass motion-state fall-shape fall-inertia)
+        body (RigidBody. body-info)]
+    (.addRigidBody *world* body)
+    (list {:body body :shape :sphere :radius r})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; transformations
+(defmethod add-expr :translate [[form [x y z] & block]]
+  ;; (let [fall-shape (SphereShape. r)
+  ;;       motion-state (DefaultMotionState.
+  ;;                      (doto (Transform.)
+  ;;                        (-> .origin (.set (Vector3f. 0 50 0)))
+  ;;                        (.setRotation (Quat4f. 0 0 0 1))))
+  ;;       mass 1
+  ;;       fall-inertia (doto (Vector3f. 0 0 0)
+  ;;                      #(.calculateLocalInertia fall-shape mass %1))
+  ;;       body-info (RigidBodyConstructionInfo. mass motion-state fall-shape fall-inertia)
+  ;;       body (RigidBody. body-info)]
+  ;;   (.addRigidBody *world* body)
+  ;;   (list {:body body :shape :sphere :radius r}))
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; drawing
+(defmulti draw-body (fn [applet {:keys [shape]}] shape))
+
+(defmethod draw-body :default [& args]
+  '())
+
+(defmethod draw-body :sphere [applet {:keys [body radius]}]
+  (let [[x y z m00 m01 m02 m10 m11 m12 m20 m21 m22] (coords body)]
+    (doto applet
+      (.pushMatrix)
+      (.translate (/ (.width applet) 2) (* (.height applet) 0.8) 0)
+      (.translate x (- y) z)
+      (.applyMatrix m00 m01 m02 0
+                    m10 m11 m12 0
+                    m20 m21 m22 0
+                    0 0 0 1))
+    (.sphere applet radius)
+    (.popMatrix applet))
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; render
+(defn render [model]
+  (let [world (make-world -60)]
+    (binding [*world* world]
+      (let [fps 24
+            bodies (add-expr model)
+            frame (sketch
+                   (setup []
+                          (doto this
+                            (size 640 370 incanter.processing/P3D)
+                            (.noStroke)
+                            (framerate fps)
+                            smooth))
+                   (draw []
+                         (.stepSimulation world (/ 1 fps) 8)
+                         (doto this
+                           (.background 50)
+                           (.lights)
+                           (draw-floor))
+                         (doseq [body bodies]
+                           (draw-body this body)
+                           )
+                         )
+                   )]
+        (add-ground)
+        (view frame :size [640 400])
+        bodies
+        ))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; sample
+(defn make-sphere [world]
+  (let [fall-shape (SphereShape. 10)
+        motion-state (DefaultMotionState.
+                       (doto (Transform.)
+                         (-> .origin (.set (Vector3f. 0 50 0)))
+                         (.setRotation (Quat4f. 0 0 0 1))))
+        mass 1
+        fall-inertia (doto (Vector3f. 0 0 0)
+                       #(.calculateLocalInertia fall-shape mass %1))
+        body-info (RigidBodyConstructionInfo. mass motion-state fall-shape fall-inertia)
+        body (RigidBody. body-info)]
+    (.addRigidBody world body)
+    body
+    ))
+
+(defn box-sample [world [x y]]
   (let [fall-mass 1
         fall-inertia (Vector3f. 10 0 0)
         shape (doto (BoxShape. (Vector3f. 3 30 15))
@@ -57,7 +177,7 @@
     (.addRigidBody world rigid-body)
     rigid-body))
 
-(defn sphere [world [x y]]
+(defn sphere-sample [world [x y]]
   (let [fall-mass 1
         fall-inertia (Vector3f. 10 0 0)
         shape (doto (SphereShape. 10.0)
@@ -88,21 +208,7 @@
      (-> transform .basis .m21)
      (-> transform .basis .m22)]))
 
-(defn draw-body [applet body]
-  (let [[x y z m00 m01 m02 m10 m11 m12 m20 m21 m22] (coords body)]
-    ;(println (str x " " y " " z))
-    (doto applet
-      (.pushMatrix)
-      (.translate (/ (.width applet) 2) (* (.height applet) 0.8) 0)
-      (.translate x (- y) z)
-      (.applyMatrix m00 m01 m02 0
-                    m10 m11 m12 0
-                    m20 m21 m22 0
-                    0 0 0 1))
-    (if (instance? BoxShape (.getCollisionShape body))
-      (.box applet 6 60 30)
-      (.sphere applet 10))
-    (.popMatrix applet)))
+
 
 (defn draw-floor [applet]
   (doto applet
@@ -112,27 +218,25 @@
    (.box applet 1000 0.001 1000)
   (.popMatrix applet))
 
-(defn make-sphere [world]
-  (let [fall-shape (SphereShape. 1)
+
+(defn add-ground-sample [world]
+  (let [shape (StaticPlaneShape. (Vector3f. 0 10 0)  0)
         motion-state (DefaultMotionState.
                        (doto (Transform.)
-                         (-> .origin (.set (Vector3f. 0 50 0)))
+                         (-> .origin (.set (Vector3f. 0 0 0)))
                          (.setRotation (Quat4f. 0 0 0 1))))
-        mass 1
-        fall-inertia (doto (Vector3f. 0 0 0)
-                       #(.calculateLocalInertia fall-shape mass %1))
-        body-info (RigidBodyConstructionInfo. mass motion-state fall-shape fall-inertia)
-        body (RigidBody. body-info)]
-    (.addRigidBody world body)
-    body
-    ))
+        construction-info (RigidBodyConstructionInfo.
+                           0 motion-state shape (Vector3f. 0 0 0))
+        rigid-body (RigidBody. construction-info)]
+    (.addRigidBody world rigid-body)
+    rigid-body))
 
 (defn frame []
   (let [fps 24
-        world (world)
-        surface (surface world)
+        world (make-world -60)
+        surface (add-ground-sample world)
         sphere (make-sphere world)
-        bodies (ref (map #(box world %) (for [x (range 200 500 60)
+        bodies (ref (map #(box-sample world %) (for [x (range 200 500 60)
                                               y (range 300 1 -60.1)]
                                           [x y])))
         ]
@@ -161,19 +265,11 @@
      ;;                 (dosync (alter bodies conj sphere))))
      )))
 
-;; (use 'scad-clj.physics)
-;; (use '[incanter.core :only [view]])
-;; (use '[incanter.processing :only [sketch size framerate smooth]])
-(view (frame) :size [640 400])
 
-;; (if true
-;;   (let [f (view (frame) :size [640 400])]
-;;     (.setSize f
-;;               (+ (.getWidth f) (- (.getWidth f)
-;;                                    (.getWidth (.getRootPane f))))
-;;               (+ (.getHeight f) (- (.getHeight f)
-;;                                    (.getHeight (.getRootPane f))))
-;;               ))
-;;   ;; (doto (view (frame) :size [640 400])
-;;   ;;   (.setSize 640 400))
-;;   )
+
+(when false
+  (use 'scad-clj.physics)
+  (use '[incanter.core :only [view]])
+  (use '[incanter.processing :only [sketch size framerate smooth]])
+  (view (frame) :size [640 400])
+  )
