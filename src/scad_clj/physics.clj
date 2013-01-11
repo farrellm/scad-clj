@@ -16,8 +16,20 @@
    (com.bulletphysics.linearmath Transform DefaultMotionState)
    (com.bulletphysics.collision.shapes StaticPlaneShape
                                        BoxShape
-                                       SphereShape)))
+                                       SphereShape
+                                       CylinderShape)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; utility
+
+(defn vector-add [v1 v2]
+  (doto (Vector3f.) (.add v1 v2)))
+
+;; (defn draw-cylinder [applet r1 r2 h]
+;;   (def h (* 0.5 h))
+;;   (.beginShape applet incanter.processing/TRIANGLE_STRIP))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def ^:dynamic *world* nil)
 
 (defn make-world [gravity]
@@ -47,7 +59,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; multimethod
 (def ^:dynamic *translation* (Vector3f.))
-(def ^:dynamic *rotation* (Quat4f.))
+(def ^:dynamic *rotation* (Quat4f. 0 0 0 1))
 
 (def add-expr nil)
 (defmulti add-expr
@@ -59,6 +71,16 @@
 ;;   '())
 
 (defmethod add-expr :list [& args]
+  (prn 'list)
+  (mapcat add-expr args))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; combinators
+
+(defmethod add-expr :union [[form & args]]
+  (mapcat add-expr args))
+
+(defmethod add-expr :hull [[form & args]]
   (mapcat add-expr args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -67,7 +89,7 @@
   (let [fall-shape (SphereShape. r)
         motion-state (DefaultMotionState.
                        (doto (Transform.)
-                         (-> .origin (.set (Vector3f. 0 50 0)))
+                         (-> .origin (.set *translation*))
                          (.setRotation (Quat4f. 0 0 0 1))))
         mass 1
         fall-inertia (doto (Vector3f. 0 0 0)
@@ -77,22 +99,26 @@
     (.addRigidBody *world* body)
     (list {:body body :shape :sphere :radius r})))
 
+;; (defmethod add-expr :cylinder [[form {:keys [r h fa fn fs]}]]
+;;   (prn 'cylinder *translation*)
+;;   (let [fall-shape (CylinderShape. (Vector3f. r h 0))
+;;         motion-state (DefaultMotionState.
+;;                        (doto (Transform.)
+;;                          (-> .origin (.set *translation*))
+;;                          (.setRotation *rotation*)))
+;;         mass 1
+;;         fall-inertia (doto (Vector3f. 0 0 0)
+;;                        #(.calculateLocalInertia fall-shape mass %1))
+;;         body-info (RigidBodyConstructionInfo. mass motion-state fall-shape fall-inertia)
+;;         body (RigidBody. body-info)]
+;;     (.addRigidBody *world* body)
+;;     (list {:body body :shape :sphere :radius r :height h})))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transformations
 (defmethod add-expr :translate [[form [x y z] & block]]
-  ;; (let [fall-shape (SphereShape. r)
-  ;;       motion-state (DefaultMotionState.
-  ;;                      (doto (Transform.)
-  ;;                        (-> .origin (.set (Vector3f. 0 50 0)))
-  ;;                        (.setRotation (Quat4f. 0 0 0 1))))
-  ;;       mass 1
-  ;;       fall-inertia (doto (Vector3f. 0 0 0)
-  ;;                      #(.calculateLocalInertia fall-shape mass %1))
-  ;;       body-info (RigidBodyConstructionInfo. mass motion-state fall-shape fall-inertia)
-  ;;       body (RigidBody. body-info)]
-  ;;   (.addRigidBody *world* body)
-  ;;   (list {:body body :shape :sphere :radius r}))
-  )
+  (binding [*translation* (vector-add *translation* (Vector3f. x z (- y)))]
+    (mapcat add-expr block)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; drawing
@@ -114,6 +140,28 @@
     (.sphere applet radius)
     (.popMatrix applet))
   )
+
+;; (defmethod draw-body :cylinder [applet {:keys [body radius height]}]
+;;   (let [[x y z m00 m01 m02 m10 m11 m12 m20 m21 m22] (coords body)]
+;;     (doto applet
+;;       (.pushMatrix)
+;;       (.translate (/ (.width applet) 2) (* (.height applet) 0.8) 0)
+;;       (.translate x (- y) z)
+;;       (.applyMatrix m00 m01 m02 0
+;;                     m10 m11 m12 0
+;;                     m20 m21 m22 0
+;;                     0 0 0 1))
+;;     (.cylinder applet radius)
+;;     (.popMatrix applet))
+;;   )
+
+(defn draw-floor [applet]
+  (doto applet
+    (.pushMatrix)
+    (.translate (/ (.width applet) 2) (* (.height applet) 0.8) 0)
+    )
+   (.box applet 1000 0.001 1000)
+  (.popMatrix applet))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; render
@@ -209,14 +257,6 @@
      (-> transform .basis .m22)]))
 
 
-
-(defn draw-floor [applet]
-  (doto applet
-    (.pushMatrix)
-    (.translate (/ (.width applet) 2) (* (.height applet) 0.8) 0)
-    )
-   (.box applet 1000 0.001 1000)
-  (.popMatrix applet))
 
 
 (defn add-ground-sample [world]

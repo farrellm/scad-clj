@@ -5,7 +5,11 @@
 
 (def model
   ;; (cube 1 2 3)
-  (sphere 10)
+  (translate [50 0 50]
+    (union
+     (sphere 10)
+     (translate [0 0 100]
+       (cube 20 10 10))))
   )
 
 (render model)
