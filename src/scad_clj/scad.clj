@@ -107,6 +107,37 @@
    (list (indent depth) "}\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2d primitives
+(defmethod write-expr :square [depth [form {:keys [x y]}]]
+  (list (indent depth) "square ([" x ", " y "], center=true);\n"))
+
+(defmethod write-expr :circle [depth [form {:keys [r]}]]
+  (list (indent depth) "circle (r = " r ");\n"))
+
+(defmethod write-expr :projection [depth [form {:keys [cut]} & block]]
+  (concat
+   (list (indent depth) "projection(cut = " cut ") {\n")
+   (mapcat #(write-expr (+ depth 1) %1) block)
+   (list (indent depth) "}\n")))
+
+(defmethod write-expr :extrude-linear [depth [form {:keys [height twist convexity]} & block]]
+  (concat
+   (list (indent depth) "linear_extrude(height=" height)
+   (if (nil? twist) []  (list ", twist=" twist))
+   (if (nil? convexity) [] (list ", convexity=" convexity))
+   (list ", center=true) {\n")
+   (mapcat #(write-expr (+ depth 1) %1) block)
+   (list (indent depth) "}\n")))
+
+(defmethod write-expr :extrude-rotate [depth [form {:keys [convexity]} & block]]
+  (concat
+   (list (indent depth) "rotate_extrude(")
+   (if (nil? convexity) [] (list "convexity=" convexity))
+   (list ") {\n")
+   (mapcat #(write-expr (+ depth 1) %1) block)
+   (list (indent depth) "}\n")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; output
 
 (defn write-scad [& block]

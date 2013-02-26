@@ -76,3 +76,32 @@
 
 (defn difference [ & block]
   `(:difference  ~@block))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2d primitives
+
+(defn square [x y]
+  `(:square {:x ~x :y ~y}))
+
+(defn circle [r]
+  `(:circle {:r ~r}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; projection
+
+(defn projection [cut & block]
+  `(:projection {:cut cut} ~@block))
+
+(defn cut [& block]
+  `(:projection {:cut true} ~@block))
+
+(defn project [& block]
+  `(:projection {:cut false} ~@block))
+
+(defn extrude-linear [{:keys [height twist convexity]} & block]
+  `(:extrude-linear {:height ~height :twist ~twist :convexity ~convexity} ~@block))
+
+(defn extrude-rotate
+  ([ block ] `(:extrude-rotate {} ~block))
+  ([{:keys [convexity]} block] `(:extrude-rotate {:convexity ~convexity} ~block))
+  )
