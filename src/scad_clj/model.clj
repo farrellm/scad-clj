@@ -86,8 +86,11 @@
 (defn circle [r]
   `(:circle {:r ~r}))
 
+(defn polygon[points paths & {:keys [convexity]}]
+  `(:polygon {:points ~points :paths ~paths :convexity ~convexity}))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; projection
+;; projection/extrusion
 
 (defn projection [cut & block]
   `(:projection {:cut cut} ~@block))

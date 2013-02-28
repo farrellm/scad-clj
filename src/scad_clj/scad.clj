@@ -114,6 +114,13 @@
 (defmethod write-expr :circle [depth [form {:keys [r]}]]
   (list (indent depth) "circle (r = " r ");\n"))
 
+(defmethod write-expr :polygon [depth [form {:keys [points paths convexity]}]]
+  `(~@(indent depth) "polygon (points= [["
+    ~(join "],[" (map #(join "," %1) points)) "]], paths=[["
+    ~(join "],[" (map #(join "," %1) paths)) "]]"
+    ~@(if (nil? convexity) [] [", convexity=" convexity])
+    ");\n"))
+
 (defmethod write-expr :projection [depth [form {:keys [cut]} & block]]
   (concat
    (list (indent depth) "projection(cut = " cut ") {\n")
