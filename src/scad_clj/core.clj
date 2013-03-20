@@ -1,7 +1,6 @@
 (ns scad-clj.core
   (:use [scad-clj.scad])
   (:use [scad-clj.model])
-  ;;(:use [scad-clj.physics])
   (:gen-class :main true))
 
 (defn -main []
