@@ -3,6 +3,9 @@ scad-clj
 
 OpenSCAD DSL in Clojure
 
+** OpenCV
+
+cmake -DBUILD_SHARED_LIBS=OFF -DWITH_V4L=OFF -DCMAKE_INSTALL_PREFIX=/usr/local/opencv ..
 
 ** Maven Repo
 
