@@ -2,6 +2,9 @@
   (:use [clojure.core.match :only (match)])
   )
 
+(def tau (* 2 Math/PI))
+(def pi Math/PI)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; mesh
 (defn fa! [x]
@@ -86,8 +89,12 @@
 (defn circle [r]
   `(:circle {:r ~r}))
 
-(defn polygon[points paths & {:keys [convexity]}]
-  `(:polygon {:points ~points :paths ~paths :convexity ~convexity}))
+(defn polygon
+  ([points]
+     `(:polygon {:points ~points}))
+  ([points paths & {:keys [convexity]}]
+     `(:polygon {:points ~points :paths ~paths :convexity ~convexity}))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; projection/extrusion
@@ -108,3 +115,12 @@
   ([ block ] `(:extrude-rotate {} ~block))
   ([{:keys [convexity]} block] `(:extrude-rotate {:convexity ~convexity} ~block))
   )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; extended
+
+(defn text [txt]
+  `(:text {:text ~txt}))
+
+(defn extrude-curve [{:keys [height radius angle n]} & block]
+  `(:extrude-curve {:height ~height :radius ~radius :angle ~angle :n ~n} ~@block))

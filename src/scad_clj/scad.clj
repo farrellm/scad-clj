@@ -2,6 +2,9 @@
   (:use [clojure.java.io :only [writer]])
   (:use [clojure.string :only [join]])
   (:use [clojure.core.match :only (match)])
+  (:use [scad-clj.model])
+  (:use [scad-clj.text])
+  (:use [clojure.pprint])
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -115,9 +118,9 @@
   (list (indent depth) "circle (r = " r ");\n"))
 
 (defmethod write-expr :polygon [depth [form {:keys [points paths convexity]}]]
-  `(~@(indent depth) "polygon (points= [["
-    ~(join "],[" (map #(join "," %1) points)) "]], paths=[["
-    ~(join "],[" (map #(join "," %1) paths)) "]]"
+  `(~@(indent depth) "polygon ("
+    "points=[[" ~(join "],[" (map #(join "," %1) points)) "]]"
+    ~@(if (nil? paths) [] `(", paths=[["  ~(join "],[" (map #(join "," %1) paths))  "]]"))
     ~@(if (nil? convexity) [] [", convexity=" convexity])
     ");\n"))
 
@@ -145,7 +148,59 @@
    (list (indent depth) "}\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; output
+;; extended
+(defmethod write-expr :text [depth [form {:keys [text]}]]
+  (defn make-paths [counts]
+    (defn foo [prev rst]
+      (if (empty? rst) '()
+          (cons (range prev (+ prev (first rst)))
+                (foo (+ prev (first rst)) (rest rst)))))
+    (foo 0 counts))
+
+  (let [polys (text->polygons text)
+        points (mapcat identity (mapcat identity polys))
+        min-x (apply min (map #(first %1) points))
+        min-y (apply min (map #(second %1) points))
+        max-x (apply max (map #(first %1) points))
+        max-y (apply max (map #(second %1) points))
+        ]
+    (concat
+     (list (indent depth) "translate (["
+           (- (/ (- min-x max-x) 2) min-x) ","
+           (- (/ (- min-y max-y) 2) min-y) "," 0 "]) {\n")
+     (mapcat (fn [letter]
+               (concat
+                (list (indent (+ 1 depth)) "union () {\n")
+                (let [counts (map count letter)
+                      verts  (mapcat (fn [x] x) letter)
+                      paths  (make-paths counts)]
+                  (write-expr (+ depth 2) (polygon verts paths :convexity (count counts))))
+                (list (indent (+ 1 depth)) "}\n")))
+             polys)
+     (list (indent depth) "}\n")
+     )))
+
+(defmethod write-expr :extrude-curve [depth [form {:keys [height radius angle n]} & block]]
+  (let [lim (Math/floor (/ n 2))]
+    (mapcat
+     (fn [x]
+       (let [theta (* angle (/ x lim) (/ 180 tau))]
+         (concat
+          (list (indent depth) "rotate(a=" theta ", v=[0,1,0]) {\n")
+          (list (indent depth) "linear_extrude(height=" (* 2  height) ", center=true) {\n")
+          (mapcat #(write-expr (+ depth 1) %1) block)
+          (list (indent depth) "}\n")
+          (list (indent depth) "}\n")
+          )))
+     (range (- lim) (+ lim 1))
+     ))
+  )
+    
+  
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; output
+  
 
 (defn write-scad [& block]
   (apply str (write-expr 0 block)))
