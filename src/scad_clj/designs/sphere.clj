@@ -13,4 +13,5 @@
         (sphere radius))))
    )
 
-(write-scad-to-file "/home/mfarrell/things/clj/sphere.scad" model)
+(spit "/home/mfarrell/things/clj/sphere.scad"
+      (write-scad model))
