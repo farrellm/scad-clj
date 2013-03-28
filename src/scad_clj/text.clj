@@ -15,8 +15,8 @@
 
 (defn text->polygons [txt]
   (let [
-        ;; font-face Core/FONT_HERSHEY_PLAIN
-        font-face Core/FONT_HERSHEY_COMPLEX
+        font-face Core/FONT_HERSHEY_PLAIN
+        ;; font-face Core/FONT_HERSHEY_SCRIPT_SIMPLEX
         font-scale 10.0
         thickness  8.0
         baseline 1
