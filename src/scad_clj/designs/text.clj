@@ -9,9 +9,9 @@
   (difference
    (translate [0 0 -50]
      (rotate (/ tau 4) [1 0 0]
-       (cylinder 60 200)))
-   (extrude-curve {:height 12 :radius 50 :angle tau :n 19}
-                  (rotate (/ tau 8) [0 0 1]
+       (cylinder 80 400)))
+   (extrude-curve {:height 12 :radius 70 :angle (* 3 tau) :n 21}
+                  (rotate (/ tau 64) [0 0 1]
                     (text "so long, and thanks for all the fishes"))))
   )
 
