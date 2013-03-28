@@ -6,9 +6,9 @@ difference () {
   }
   intersection () {
     union () {
-      translate ([-659.7344572538566,0,-151.99999999999974]) {
+      translate ([-659.7344572538566,0,-159.99999999999974]) {
         rotate (a=-540.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -176,9 +176,9 @@ difference () {
           }
         }
       }
-      translate ([-415.3433595014419,0,362.1643582358093]) {
+      translate ([-421.8154954564415,0,357.4620762174695]) {
         rotate (a=-486.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -346,9 +346,9 @@ difference () {
           }
         }
       }
-      translate ([85.10869291673676,0,457.29519721532705]) {
+      translate ([77.50024078637553,0,459.76733317032665]) {
         rotate (a=-432.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -516,9 +516,9 @@ difference () {
           }
         }
       }
-      translate ([413.871934678263,0,150.69504568252427]) {
+      translate ([411.3997987232635,0,158.3034978128855]) {
         rotate (a=-378.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -686,9 +686,9 @@ difference () {
           }
         }
       }
-      translate ([368.4402233038441,0,-236.32991710305194]) {
+      translate ([373.1425053221839,0,-229.85778114805237]) {
         rotate (a=-324.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -856,9 +856,9 @@ difference () {
           }
         }
       }
-      translate ([81.99999999999994,0,-399.8672286269283]) {
+      translate ([89.99999999999994,0,-399.8672286269283]) {
         rotate (a=-270.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -1026,9 +1026,9 @@ difference () {
           }
         }
       }
-      translate ([-165.29616438925814,0,-291.4522672999441]) {
+      translate ([-160.59388237091835,0,-297.9244032549437]) {
         rotate (a=-216.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -1196,9 +1196,9 @@ difference () {
           }
         }
       }
-      translate ([-213.5728199174637,0,-86.82588661635039]) {
+      translate ([-216.04495587246328,0,-94.43433874671162]) {
         rotate (a=-162.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -1366,9 +1366,9 @@ difference () {
           }
         }
       }
-      translate ([-118.76046614943738,0,30.14955738039969]) {
+      translate ([-126.3689182797986,0,27.677421425400112]) {
         rotate (a=-108.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -1536,9 +1536,9 @@ difference () {
           }
         }
       }
-      translate ([-27.561175098446096,0,31.572029457293024]) {
+      translate ([-34.03331105344567,0,36.274311475632814]) {
         rotate (a=-54.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -1706,9 +1706,9 @@ difference () {
           }
         }
       }
-      translate ([0.0,0,12.0]) {
+      translate ([0.0,0,20.0]) {
         rotate (a=0.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -1876,9 +1876,9 @@ difference () {
           }
         }
       }
-      translate ([27.561175098446096,0,31.572029457293024]) {
+      translate ([34.03331105344567,0,36.274311475632814]) {
         rotate (a=54.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -2046,9 +2046,9 @@ difference () {
           }
         }
       }
-      translate ([118.76046614943738,0,30.14955738039969]) {
+      translate ([126.3689182797986,0,27.677421425400112]) {
         rotate (a=108.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -2216,9 +2216,9 @@ difference () {
           }
         }
       }
-      translate ([213.5728199174637,0,-86.82588661635039]) {
+      translate ([216.04495587246328,0,-94.43433874671162]) {
         rotate (a=162.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -2386,9 +2386,9 @@ difference () {
           }
         }
       }
-      translate ([165.29616438925814,0,-291.4522672999441]) {
+      translate ([160.59388237091835,0,-297.9244032549437]) {
         rotate (a=216.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -2556,9 +2556,9 @@ difference () {
           }
         }
       }
-      translate ([-81.99999999999994,0,-399.8672286269283]) {
+      translate ([-89.99999999999994,0,-399.8672286269283]) {
         rotate (a=270.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -2726,9 +2726,9 @@ difference () {
           }
         }
       }
-      translate ([-368.4402233038441,0,-236.32991710305194]) {
+      translate ([-373.1425053221839,0,-229.85778114805237]) {
         rotate (a=324.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -2896,9 +2896,9 @@ difference () {
           }
         }
       }
-      translate ([-413.871934678263,0,150.69504568252427]) {
+      translate ([-411.3997987232635,0,158.3034978128855]) {
         rotate (a=378.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -3066,9 +3066,9 @@ difference () {
           }
         }
       }
-      translate ([-85.10869291673676,0,457.29519721532705]) {
+      translate ([-77.50024078637553,0,459.76733317032665]) {
         rotate (a=432.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -3236,9 +3236,9 @@ difference () {
           }
         }
       }
-      translate ([415.3433595014419,0,362.1643582358093]) {
+      translate ([421.8154954564415,0,357.4620762174695]) {
         rotate (a=486.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -3406,9 +3406,9 @@ difference () {
           }
         }
       }
-      translate ([659.7344572538566,0,-151.99999999999974]) {
+      translate ([659.7344572538566,0,-159.99999999999974]) {
         rotate (a=540.0, v=[0,1,0]) {
-          linear_extrude(height=24, center=true) {
+          linear_extrude(height=40, center=true) {
             rotate (a=5.625, v=[0,0,1]) {
               translate ([-1595.0,-96.0,0]) {
                 render () {
@@ -3580,7 +3580,7 @@ difference () {
     translate ([0,0,-70]) {
       rotate (a=90.0, v=[1,0,0]) {
         difference () {
-          cylinder (h=100, r=82, center=true);
+          cylinder (h=100, r=90, center=true);
           cylinder (h=110, r=70, center=true);
         }
       }

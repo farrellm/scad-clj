@@ -10,7 +10,7 @@
    (translate [0 0 -50]
      (rotate (/ tau 4) [1 0 0]
        (cylinder 80 400)))
-   (extrude-curve {:height 12 :radius 70 :angle (* 3 tau) :n 21}
+   (extrude-curve {:height 20 :radius 70 :angle (* 3 tau) :n 21}
                   (rotate (/ tau 64) [0 0 1]
                     (text "so long, and thanks for all the fishes"))))
   )
