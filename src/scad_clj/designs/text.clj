@@ -11,7 +11,8 @@
      (rotate (/ tau 4) [1 0 0]
        (cylinder 60 200)))
    (extrude-curve {:height 12 :radius 50 :angle tau :n 19}
-                  (text "X0B")))
+                  (rotate (/ tau 8) [0 0 1]
+                    (text "so long, and thanks for all the fishes"))))
   )
 
 ;; (pprint model)
