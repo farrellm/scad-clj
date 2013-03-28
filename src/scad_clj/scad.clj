@@ -170,32 +170,18 @@
            (- (/ (- min-y max-y) 2) min-y) "," 0 "]) {\n")
      (mapcat (fn [letter]
                (concat
+                (list (indent (+ 1 depth)) "render () {\n")
                 (list (indent (+ 1 depth)) "union () {\n")
                 (let [counts (map count letter)
                       verts  (mapcat (fn [x] x) letter)
                       paths  (make-paths counts)]
                   (write-expr (+ depth 2) (polygon verts paths :convexity (count counts))))
+                (list (indent (+ 1 depth)) "}\n")
                 (list (indent (+ 1 depth)) "}\n")))
              polys)
      (list (indent depth) "}\n")
      )))
 
-(defmethod write-expr :extrude-curve [depth [form {:keys [height radius angle n]} & block]]
-  (let [lim (Math/floor (/ n 2))]
-    (mapcat
-     (fn [x]
-       (let [theta (* angle (/ x lim) (/ 180 tau))]
-         (concat
-          (list (indent depth) "rotate(a=" theta ", v=[0,1,0]) {\n")
-          (list (indent depth) "linear_extrude(height=" (* 2  height) ", center=true) {\n")
-          (mapcat #(write-expr (+ depth 1) %1) block)
-          (list (indent depth) "}\n")
-          (list (indent depth) "}\n")
-          )))
-     (range (- lim) (+ lim 1))
-     ))
-  )
-    
   
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

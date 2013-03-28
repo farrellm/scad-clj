@@ -1,5 +1,6 @@
 (ns scad-clj.model
   (:use [clojure.core.match :only (match)])
+  (:use [clojure.pprint])
   )
 
 (def tau (* 2 Math/PI))
@@ -69,6 +70,7 @@
 ;; combinators
 
 (defn union [ & block]
+  (pprint block)
   `(:union  ~@block))
 
 (defn intersection [ & block]
@@ -122,5 +124,32 @@
 (defn text [txt]
   `(:text {:text ~txt}))
 
-(defn extrude-curve [{:keys [height radius angle n]} & block]
-  `(:extrude-curve {:height ~height :radius ~radius :angle ~angle :n ~n} ~@block))
+;; (defn extrude-curve [{:keys [height radius angle n]} & block]
+;;   `(:extrude-curve {:height ~height :radius ~radius :angle ~angle :n ~n} ~@block))
+
+(defn extrude-curve [{:keys [height radius angle n]} block]
+  (let [lim (Math/floor (/ n 2))]
+    `(:intersection
+      (:union
+       ~@(map (fn [x]
+                (let [theta (* 0.5 angle (/ x lim) )
+                      dx (* radius (- (Math/sin theta) (* theta (Math/cos theta))))
+                      dz (* radius (+ (Math/cos theta) (* theta (Math/sin theta)) (- 1)))
+                      ]
+                  ;; (pprint (list dx dz))
+                  (translate [(+ dx (* (Math/sin theta) height)) 0
+                              (+ dz (* (Math/cos theta) height))]
+                    (rotate theta [0 1 0]
+                      ;; (render)
+                      (extrude-linear {:height (* 2  height)} block)))
+                  )
+                )
+              (range (- lim) (+ lim 1))
+              ))
+      ~(translate [0 0 (- radius)]
+         (rotate (/ tau 4) [1 0 0]
+           (difference
+            (cylinder (+  radius height) 100)
+            (cylinder radius 110))
+           ))))
+  )
