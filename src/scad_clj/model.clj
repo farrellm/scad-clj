@@ -124,32 +124,29 @@
 (defn text [txt]
   `(:text {:text ~txt}))
 
-;; (defn extrude-curve [{:keys [height radius angle n]} & block]
-;;   `(:extrude-curve {:height ~height :radius ~radius :angle ~angle :n ~n} ~@block))
-
 (defn extrude-curve [{:keys [height radius angle n]} block]
-  (let [lim (Math/floor (/ n 2))]
-    `(:intersection
-      (:union
-       ~@(map (fn [x]
-                (let [theta (* 0.5 angle (/ x lim) )
-                      dx (* radius (- (Math/sin theta) (* theta (Math/cos theta))))
-                      dz (* radius (+ (Math/cos theta) (* theta (Math/sin theta)) (- 1)))
-                      ]
-                  ;; (pprint (list dx dz))
-                  (translate [(+ dx (* (Math/sin theta) height)) 0
-                              (+ dz (* (Math/cos theta) height))]
-                    (rotate theta [0 1 0]
-                      ;; (render)
-                      (extrude-linear {:height (* 2  height)} block)))
+  (let [lim (Math/floor (/ n 2))
+        phi (/ (/ angle (- n 1)) 2)]
+    (apply union
+           (map (fn [x]
+                  (let [theta (* 0.5 angle (/ x lim) )
+                        dx (* radius (- (Math/sin theta)
+                                        (* theta (Math/cos theta))))
+                        dz (* radius (+ (Math/cos theta)
+                                        (* theta (Math/sin theta)) (- 1)))]
+                    ;; (pprint (list dx dz))
+                    (translate [(+ dx (* (Math/sin theta) (/ height 2))) 0
+                                (+ dz (* (Math/cos theta) (/ height 2)))]
+                      (rotate theta [0 1 0]
+                        (intersection
+                         (translate [(* radius theta) 0 0]
+                           (cube (* 2 (+  radius height) (Math/sin phi))
+                                 1000 (* 2 height)))
+                         (extrude-linear {:height (* 1 height)}
+                           (mirror [1 0 0] block)))))
+                    )
                   )
-                )
-              (range (- lim) (+ lim 1))
-              ))
-      ~(translate [0 0 (- radius)]
-         (rotate (/ tau 4) [1 0 0]
-           (difference
-            (cylinder (+  radius height) 100)
-            (cylinder radius 110))
-           ))))
+                (range (- lim) (+ lim 1))
+                ))
+      )
   )

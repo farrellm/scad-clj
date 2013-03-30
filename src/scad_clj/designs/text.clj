@@ -5,14 +5,18 @@
   )
 
 (def model
-  ;; (text "X O B")
-  (difference
-   (translate [0 0 -50]
-     (rotate (/ tau 4) [1 0 0]
-       (cylinder 80 400)))
-   (extrude-curve {:height 20 :radius 70 :angle (* 3 tau) :n 21}
-                  (rotate (/ tau 64) [0 0 1]
-                    (text "so long, and thanks for all the fishes"))))
+  ;; (difference
+  (union
+   (cylinder 200 500)
+   
+   (rotate (- (/ tau 4)) [1 0 0]
+     (translate [0 0 188]
+       (let [m 3]
+         (extrude-curve {:height 20 :radius 188 :angle (* m tau) :n (* m 29)}
+                        (rotate (/ tau 64) [0 0 1]
+                          ;; (text "XOB"))
+                          (text "so long, and thanks for all the fishes"))
+                        )))))
   )
 
 ;; (pprint model)
