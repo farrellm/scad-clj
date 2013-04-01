@@ -70,7 +70,6 @@
 ;; combinators
 
 (defn union [ & block]
-  (pprint block)
   `(:union  ~@block))
 
 (defn intersection [ & block]
@@ -119,10 +118,17 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; other
+
+(defn render [ & block]
+  `(:render ~@block))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extended
 
-(defn text [txt]
-  `(:text {:text ~txt}))
+(defn text
+  ([txt] `(:text {:text ~txt}))
+  ([{:keys [face]} txt] `(:text {:text ~txt :face ~face})))
 
 (defn extrude-curve [{:keys [height radius angle n]} block]
   (let [lim (Math/floor (/ n 2))
@@ -130,23 +136,19 @@
     (apply union
            (map (fn [x]
                   (let [theta (* 0.5 angle (/ x lim) )
-                        dx (* radius (- (Math/sin theta)
-                                        (* theta (Math/cos theta))))
-                        dz (* radius (+ (Math/cos theta)
-                                        (* theta (Math/sin theta)) (- 1)))]
-                    ;; (pprint (list dx dz))
-                    (translate [(+ dx (* (Math/sin theta) (/ height 2))) 0
-                                (+ dz (* (Math/cos theta) (/ height 2)))]
+                        r radius
+                        dx (* r (- (Math/sin theta)
+                                   (* theta (Math/cos theta))))
+                        dz (* r (+ (Math/cos theta)
+                                   (* theta (Math/sin theta)) (- 1)))]
+                    (translate [(+ dx (* 0 (Math/sin theta) (/ height 2)))
+                                0
+                                (+ dz (* 0 (Math/cos theta) (/ height 2)))]
                       (rotate theta [0 1 0]
                         (intersection
-                         (translate [(* radius theta) 0 0]
-                           (cube (* 2 (+  radius height) (Math/sin phi))
+                         (translate [(* r theta) 0 0]
+                           (cube (* 2 (+  r height) (Math/sin phi))
                                  1000 (* 2 height)))
-                         (extrude-linear {:height (* 1 height)}
-                           (mirror [1 0 0] block)))))
-                    )
-                  )
-                (range (- lim) (+ lim 1))
-                ))
-      )
-  )
+                         (extrude-linear {:height height}
+                           block))))))
+                (range (- lim) (+ lim 1))))))

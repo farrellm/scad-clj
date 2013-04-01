@@ -109,6 +109,12 @@
    (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
+(defmethod write-expr :render [depth [form & block]]
+  (concat
+   (list (indent depth) "render () {\n")
+   (mapcat #(write-expr (+ depth 1) %1) block)
+   (list (indent depth) "}\n")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2d primitives
 (defmethod write-expr :square [depth [form {:keys [x y]}]]
@@ -162,31 +168,23 @@
         min-x (apply min (map #(first %1) points))
         min-y (apply min (map #(second %1) points))
         max-x (apply max (map #(first %1) points))
-        max-y (apply max (map #(second %1) points))
-        ]
-    (concat
-     (list (indent depth) "translate (["
-           (- (/ (- min-x max-x) 2) min-x) ","
-           (- (/ (- min-y max-y) 2) min-y) "," 0 "]) {\n")
-     (mapcat (fn [letter]
-               (concat
-                (list (indent (+ 1 depth)) "render () {\n")
-                (list (indent (+ 1 depth)) "union () {\n")
-                (let [counts (map count letter)
-                      verts  (mapcat (fn [x] x) letter)
-                      paths  (make-paths counts)]
-                  (write-expr (+ depth 2) (polygon verts paths :convexity (count counts))))
-                (list (indent (+ 1 depth)) "}\n")
-                (list (indent (+ 1 depth)) "}\n")))
-             polys)
-     (list (indent depth) "}\n")
-     )))
+        max-y (apply max (map #(second %1) points))]
+    (write-expr (+ depth 2)
+                (mirror [0 1 0]
+                  (translate [(- (/ (- min-x max-x) 2) min-x)
+                              (- (/ (- min-y max-y) 2) min-y) 0]
+                    (map (fn [letter]
+                           (render
+                            (union
+                             (let [counts (map count letter)
+                                   verts  (mapcat (fn [x] x) letter)
+                                   paths  (make-paths counts)]
+                               (polygon verts paths :convexity (count counts))))))
+                         polys))))))
 
-  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; output
-  
+;; output
 
 (defn write-scad [& block]
   (apply str (write-expr 0 block)))
