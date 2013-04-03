@@ -4,7 +4,13 @@ import org.opencv.core.Core;
 
 public class LibraryLoader {
     static {
-	System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+	try {
+	    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+	} catch (UnsatisfiedLinkError e) {
+	    System.loadLibrary(Core.NATIVE_LIBRARY_NAME + "_x64");
+	} catch (UnsatisfiedLinkError e) {
+	    System.loadLibrary(Core.NATIVE_LIBRARY_NAME + "_mac");
+	}
     }
 	
     public static void force() {}
