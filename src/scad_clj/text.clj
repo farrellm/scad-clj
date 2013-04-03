@@ -13,12 +13,12 @@
 
 ;; Utils/bitmapToMat
 
-(defn text->polygons [txt]
+(defn text->polygons [txt & {:keys [face size]}]
   (let [
-        font-face Core/FONT_HERSHEY_PLAIN
-        ;; font-face Core/FONT_HERSHEY_SCRIPT_SIMPLEX
-        font-scale 10.0
-        thickness  8.0
+        font-face (if (= face :script) Core/FONT_HERSHEY_SCRIPT_SIMPLEX
+                    Core/FONT_HERSHEY_PLAIN)
+        font-scale size
+        thickness size
         baseline 1
 
         text-size (Core/getTextSize txt font-face font-scale
@@ -44,7 +44,7 @@
                           Imgproc/RETR_CCOMP
                           Imgproc/CHAIN_APPROX_SIMPLE)
 
-    (Highgui/imwrite "out.png" img)
+    ;; (Highgui/imwrite "out.png" img)
 
     (declare make-node)
     (defn make-tree [i]

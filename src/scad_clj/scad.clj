@@ -155,7 +155,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extended
-(defmethod write-expr :text [depth [form {:keys [text]}]]
+(defmethod write-expr :text [depth [form {:keys [text face size]}]]
   (defn make-paths [counts]
     (defn foo [prev rst]
       (if (empty? rst) '()
@@ -163,7 +163,7 @@
                 (foo (+ prev (first rst)) (rest rst)))))
     (foo 0 counts))
 
-  (let [polys (text->polygons text)
+  (let [polys (text->polygons text :face face :size size)
         points (mapcat identity (mapcat identity polys))
         min-x (apply min (map #(first %1) points))
         min-y (apply min (map #(second %1) points))

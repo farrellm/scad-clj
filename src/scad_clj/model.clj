@@ -126,9 +126,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extended
 
-(defn text
-  ([txt] `(:text {:text ~txt}))
-  ([{:keys [face]} txt] `(:text {:text ~txt :face ~face})))
+(defn text [txt & {:keys [face size]}]
+  `(:text {:text ~txt :face ~face :size ~size}))
 
 (defn extrude-curve [{:keys [height radius angle n]} block]
   (let [lim (Math/floor (/ n 2))
