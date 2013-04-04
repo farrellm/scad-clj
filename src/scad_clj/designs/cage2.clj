@@ -2,8 +2,6 @@
   (:use [scad-clj.scad])
   (:use [scad-clj.model]))
 
-(def tau (* 2 Math/PI))
-
 (def model
   (union
    (union
