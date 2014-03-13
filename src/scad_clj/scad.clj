@@ -3,7 +3,6 @@
   (:use [clojure.string :only [join]])
   (:use [clojure.core.match :only (match)])
   (:use [scad-clj.model])
-  (:use [scad-clj.text])
   (:use [clojure.pprint])
   )
 
@@ -153,34 +152,6 @@
    (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; extended
-(defmethod write-expr :text [depth [form {:keys [text face size]}]]
-  (defn make-paths [counts]
-    (defn foo [prev rst]
-      (if (empty? rst) '()
-          (cons (range prev (+ prev (first rst)))
-                (foo (+ prev (first rst)) (rest rst)))))
-    (foo 0 counts))
-
-  (let [polys (text->polygons text :face face :size size)
-        points (mapcat identity (mapcat identity polys))
-        min-x (apply min (map #(first %1) points))
-        min-y (apply min (map #(second %1) points))
-        max-x (apply max (map #(first %1) points))
-        max-y (apply max (map #(second %1) points))]
-    (write-expr (+ depth 2)
-                (mirror [0 1 0]
-                  (translate [(- (/ (- min-x max-x) 2) min-x)
-                              (- (/ (- min-y max-y) 2) min-y) 0]
-                    (map (fn [letter]
-                           (render
-                            (union
-                             (let [counts (map count letter)
-                                   verts  (mapcat (fn [x] x) letter)
-                                   paths  (make-paths counts)]
-                               (polygon verts paths :convexity (count counts))))))
-                         polys))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
