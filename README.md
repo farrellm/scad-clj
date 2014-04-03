@@ -3,14 +3,24 @@ scad-clj
 
 OpenSCAD DSL in Clojure
 
-## OpenCV
+Releases and dependency information
+----
 
-```bash
-cmake -DBUILD_SHARED_LIBS=OFF -DWITH_V4L=OFF -DCMAKE_INSTALL_PREFIX=/usr/local/opencv ..
+Latest release: 0.1.0
+
+[Leiningen](http://github.com/technomancy/leiningen/) dependency information:
+
+```
+[scad-clj "0.1.0"]
 ```
 
-## Maven Repo
+[Maven](http://maven.apache.org) dependency information:
 
-```bash
-mvn deploy:deploy-file -Dfile=/usr/local/opencv/share/OpenCV/java/opencv-244.jar -DartifactId=opencv -Dversion=2.4.4 -DgroupId=opencv -Dpackaging=jar -Durl=file:repo -DcreateChecksum=true
 ```
+<dependency>
+  <groupId>scad-clj</groupId>
+  <artifactId>scad-clj</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
