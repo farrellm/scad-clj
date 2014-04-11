@@ -70,6 +70,12 @@
    (write-block depth block)
    (list (indent depth) "}\n")))
 
+(defmethod write-expr :rotate [depth [form [[x y z]] & block]]
+	(concat
+		(list (indent depth) "rotate ([" x "," y "," z "]) {\n")
+		(write-block depth block)
+		(list (indent depth) "}\n")))
+
 (defmethod write-expr :scale [depth [form [x y z] & block]]
   (concat
    (list (indent depth) "scale ([" x "," y "," z "]) {\n")

@@ -60,6 +60,9 @@
 (defn rotate [a [x y z] & block]
   `(:rotate [~a [~x ~y ~z]] ~@block))
 
+(defn rotate [[x y z] & block]
+	`(:rotate [[~x ~y ~z]] ~@block))
+
 (defn scale [[x y z] & block]
   `(:scale [~x ~y ~z] ~@block))
 
