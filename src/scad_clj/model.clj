@@ -1,6 +1,7 @@
 (ns scad-clj.model
   (:use [clojure.core.match :only (match)])
   (:use [clojure.pprint])
+  (:use [scad-clj.text :only (text-parts)])  
   )
 
 (def tau (* 2 Math/PI))
@@ -118,6 +119,15 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; text
+
+(defn text [font size text]
+  (let [split-paths (text-parts font size text)]
+    (difference
+     (apply union (map polygon (:union split-paths)))
+     (apply union (map polygon (:difference split-paths))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; other
 
 (defn render [ & block]
@@ -151,3 +161,4 @@
                          (extrude-linear {:height height}
                            block))))))
                 (range (- lim) (+ lim 1))))))
+

@@ -1,80 +1,116 @@
 (ns scad-clj.text
-  (:use [clojure.core.match :only (match)])
-  (:import (org.opencv.core Core CvType Mat MatOfPoint2f Point Scalar Size))
-  (:import (org.opencv.highgui Highgui))
-  (:import (org.opencv.imgproc Imgproc))
-  (:import (scad_clj.library LibraryLoader))
-  (:use [clojure.pprint])
-  )
+  (:import (java.awt Font RenderingHints)
+           (java.awt.font FontRenderContext)
+           (java.awt.geom PathIterator)))
 
-(LibraryLoader/force)
+(def segment-type
+  {PathIterator/SEG_CLOSE :close
+   PathIterator/SEG_CUBICTO :cubic-to
+   PathIterator/SEG_LINETO :line-to
+   PathIterator/SEG_MOVETO :move-to
+   PathIterator/SEG_QUADTO :quad-to})
 
-(defn- p+ [p1 p2] (Point. (+ (.x p1) (.x p2)) (+ (.y p1) (.y p2))))
+;; How many points are specified for each segment type
+(def segment-length
+  {PathIterator/SEG_CLOSE 0
+   PathIterator/SEG_CUBICTO 3
+   PathIterator/SEG_LINETO 1
+   PathIterator/SEG_MOVETO 1
+   PathIterator/SEG_QUADTO 2})
 
-;; Utils/bitmapToMat
+(defn- path-iterator->segments
+  "Converts a PathIterator into a sequence of segments of the form [segment-type [& points]]"
+  [^PathIterator path-iterator]
+  (if (not (.isDone path-iterator))
+    (let [coords (double-array (* 2 (apply max (vals segment-length))))
+          segment-code (.currentSegment path-iterator coords)]
+      (cons [(segment-type segment-code)
+             (take (segment-length segment-code) (partition 2 coords))]
+            (lazy-seq (path-iterator->segments (doto path-iterator (.next))))))))
 
-(defn text->polygons [txt & {:keys [face size]}]
-  (let [
-        font-face (if (= face :script) Core/FONT_HERSHEY_SCRIPT_SIMPLEX
-                    Core/FONT_HERSHEY_PLAIN)
-        font-scale size
-        thickness size
-        baseline 1
+(defn- quad->fn
+  "Returns the parametric control equation f(t), 0 <= t <= 1
+for the quadratic interpolation of 3 points."
+  [cp p1 p2]
+  (fn [t]
+    (letfn [(interp [a b c] (+ (* (Math/pow (- 1 t) 2) a)
+                               (* 2 t (- 1 t) b)
+                               (* (Math/pow t 2) c)))]
+      [(apply interp (map first [cp p1 p2]))
+       (apply interp (map second [cp p1 p2]))])))
 
-        text-size (Core/getTextSize txt font-face font-scale
-                                    thickness (int-array `(~baseline)))
+(defn- cubic->fn
+  "Returns the parametric control equation f(t), 0 <= t <= 1
+for the cubic interpolation of 4 points."  
+  [cp p1 p2 p3]  
+  (fn [t]
+    (letfn [(interp [a b c d]
+              (+ (* (Math/pow (- 1 t) 3) a)
+                 (* 3 t (Math/pow (- 1 t) 2) b)
+                 (* 3 (Math/pow t 2) (- 1 t) c)                                
+                 (* (Math/pow t 3) d)))]
+      [(apply interp (map first [cp p1 p2 p3]))
+       (apply interp (map second [cp p1 p2 p3]))])))
 
-        text-size-2 (Size. (.width text-size) (* 2 (.height text-size)))
+(defn- segments->lines
+  "Takes a sequence of segments of the form [segment-type [& points]]
+and transforms each segment into a sequence of interpolated points"
+  [segments]
+  (reductions (fn [prev-line-points [segment-type control-points]]
+                #_(println segment-type)
+                (condp = segment-type
+                  :move-to control-points
+                  :line-to control-points
+                  :quad-to (map (apply quad->fn
+                                       (last prev-line-points)
+                                       control-points)
+                                (range 1/10 11/10 1/10))                    
+                  :cubic-to (map (apply cubic->fn
+                                        (last prev-line-points)
+                                        control-points)
+                                 (range 1/10 11/10 1/10))))
+              (last (rest (first segments)))
+              (rest segments)))
 
-        img (Mat. text-size-2 CvType/CV_8UC3 (Scalar/all 0.0))
-        ret (Mat. text-size-2 CvType/CV_8UC3)
-        tmp (Mat. text-size-2 CvType/CV_8UC3)
-        
-        text-org (Point. (/ (- (.cols img) (.width text-size)) 2)
-                         (/ (+ (.rows img) (.height text-size)) 2))
+(defn- path2d [points]
+  (let [path (doto (java.awt.geom.Path2D$Double.)
+               (.moveTo (-> points first first)
+                        (-> points first second)))]
+    (doseq [point (rest points)]
+      (.lineTo path (first point) (second point)))
+    path))
 
-        contours (java.util.LinkedList.)
-        hierarchy (Mat.)]
+(defn- split-intersecting [paths]
+  (let [polygons (map path2d paths)
+        starting-points (map first paths)]
+    (reduce (fn [acc path]
+              (let [polygon (path2d path)]
+                (if (some #(.contains % (-> path first first) (-> path first second))
+                          (:polygons acc))
+                  (merge-with concat acc
+                              {:difference [path]})
+                  (merge-with concat acc
+                              {:polygons [polygon]
+                               :union [path]}))))
+            {:polygons []
+             :union []
+             :difference []}
+            paths)))
 
-    (Core/putText img txt text-org font-face font-scale
-                  (Scalar/all 255) thickness)
-    (Imgproc/cvtColor img tmp Imgproc/COLOR_BGR2GRAY)
+(defn text-parts [font size text]
+  (let [frc (FontRenderContext. nil
+                                RenderingHints/VALUE_TEXT_ANTIALIAS_DEFAULT
+                                RenderingHints/VALUE_FRACTIONALMETRICS_DEFAULT)
+        path-iter (-> (Font. font Font/PLAIN size)
+                      (.createGlyphVector frc text)
+                      (.getOutline)
+                      (.getPathIterator nil))
+        paths (->> (path-iterator->segments path-iter)
+                   (partition-by #(= (first %) :close))
+                   (take-nth 2)
+                   (map segments->lines)
+                   (map flatten)
+                   (map (partial partition 2)))]
+    (split-intersecting paths)))
 
-    (Imgproc/findContours tmp contours hierarchy
-                          Imgproc/RETR_CCOMP
-                          Imgproc/CHAIN_APPROX_SIMPLE)
 
-    ;; (Highgui/imwrite "out.png" img)
-
-    (declare make-node)
-    (defn make-tree [i]
-      (let [node (make-node i)
-            next (int (aget (.get hierarchy 0 i) 0))]
-        (if (= next -1) (list node)
-            (cons node (make-tree next))))
-      )
-    (defn make-node [i]
-      (let [child (int (aget (.get hierarchy 0 i) 2))]
-        (if (= child -1) i
-            (cons i (make-tree child))))
-      )
-
-    (defn mat->points [mat]
-      (map (fn [p] [(.x p) (.y p)])
-           (.toList mat)))
-
-    (let [approx 
-          (map #(let [c (MatOfPoint2f.)
-                      a (MatOfPoint2f.)]
-                  (.fromList c (.toList %1))
-                  (Imgproc/approxPolyDP c a 1 true)
-                  a)
-               contours)
-          tree (make-tree 0)]
-      (map (fn [l]
-             (if (coll? l)
-               (map #(mat->points (.get approx %1)) l)
-               (list (mat->points (.get approx l)))
-               ))
-           tree)
-      )))
