@@ -118,14 +118,22 @@
   ([{:keys [convexity]} block] `(:extrude-rotate {:convexity ~convexity} ~block))
   )
 
+(let [{:keys [a]} {:a 3}] a)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; text
 
 (defn text [font size text]
-  (let [split-paths (text-parts font size text)]
-    (difference
-     (apply union (map polygon (:union split-paths)))
-     (apply union (map polygon (:difference split-paths))))))
+  (let [even-odd-paths (text-parts font size text)]
+    (:shape
+     (reduce (fn [{:keys [union? shape]} paths]
+               (if union?
+                 {:union? false
+                  :shape (apply union shape (map polygon paths))}
+                 {:union? true
+                  :shape (apply difference shape (map polygon paths))}))
+             {:union? true}
+             even-odd-paths))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; other
@@ -136,8 +144,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extended
 
-(defn text [txt & {:keys [face size]}]
-  `(:text {:text ~txt :face ~face :size ~size}))
 
 (defn extrude-curve [{:keys [height radius angle n]} block]
   (let [lim (Math/floor (/ n 2))
