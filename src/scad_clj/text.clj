@@ -88,25 +88,27 @@ and transforms each segment into a sequence of interpolated points"
                                       path))
         count-intersections (fn [path] (count
                                         (filter #(poly-intersects-path? % path)
-                                                polys)))
-        count-grouping (group-by count-intersections paths)]
-    (->> count-grouping
-         (sort-by first)
-         (map second))))
+                                                polys)))]
+    (group-by count-intersections paths)))
 
 (defn text-parts [font size text]
   (let [frc (FontRenderContext. nil
                                 RenderingHints/VALUE_TEXT_ANTIALIAS_DEFAULT
                                 RenderingHints/VALUE_FRACTIONALMETRICS_DEFAULT)
-        path-iter (-> (Font. font Font/PLAIN size)
-                      (.createGlyphVector frc text)
-                      (.getOutline)
-                      (.getPathIterator nil))
-        paths (->> (path-iterator->segments path-iter)
-                   (partition-by #(= (first %) :close))
-                   (take-nth 2)
-                   (map segments->lines)
-                   (map flatten)
-                   (map (partial partition 2)))]
-    (split-even-odd-intersecting paths)))
-
+        glyph-vector (-> (Font. font Font/PLAIN size)
+                         (.createGlyphVector frc text))
+        path-iters (map #(-> glyph-vector
+                             (.getGlyphOutline %)
+                             (.getPathIterator nil))
+                        (range (.getNumGlyphs glyph-vector)))
+        intersection-count-maps (map (fn [path-iter] (->> (path-iterator->segments path-iter)
+                                        (partition-by #(= (first %) :close))
+                                        (take-nth 2)
+                                        (map segments->lines)
+                                        (map flatten)
+                                        (map (partial partition 2))
+                                        split-even-odd-intersecting))
+                   path-iters)]
+    (->> (apply merge-with concat intersection-count-maps)
+         (sort-by first)
+         (map second))))
