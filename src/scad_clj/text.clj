@@ -80,37 +80,36 @@ and transforms each segment into a sequence of interpolated points"
       (.lineTo path (first point) (second point)))
     path))
 
-(defn- split-intersecting [paths]
-  (let [polygons (map path2d paths)
-        starting-points (map first paths)]
-    (reduce (fn [acc path]
-              (let [polygon (path2d path)]
-                (if (some #(.contains % (-> path first first) (-> path first second))
-                          (:polygons acc))
-                  (merge-with concat acc
-                              {:difference [path]})
-                  (merge-with concat acc
-                              {:polygons [polygon]
-                               :union [path]}))))
-            {:polygons []
-             :union []
-             :difference []}
-            paths)))
+(defn- split-even-odd-intersecting [paths]
+  (let [poly-cache (zipmap paths (map path2d paths))
+        poly-intersects-path? (fn [poly path]
+                                (some #(.contains poly
+                                                  (first %) (second %))
+                                      path))
+        count-intersections (fn [path] (count
+                                        (filter #(or (= path %)
+                                                     (poly-intersects-path? (poly-cache %) path))
+                                                paths)))]
+    (group-by count-intersections paths)))
 
 (defn text-parts [font size text]
   (let [frc (FontRenderContext. nil
                                 RenderingHints/VALUE_TEXT_ANTIALIAS_DEFAULT
                                 RenderingHints/VALUE_FRACTIONALMETRICS_DEFAULT)
-        path-iter (-> (Font. font Font/PLAIN size)
-                      (.createGlyphVector frc text)
-                      (.getOutline)
-                      (.getPathIterator nil))
-        paths (->> (path-iterator->segments path-iter)
-                   (partition-by #(= (first %) :close))
-                   (take-nth 2)
-                   (map segments->lines)
-                   (map flatten)
-                   (map (partial partition 2)))]
-    (split-intersecting paths)))
-
-
+        glyph-vector (-> (Font. font Font/PLAIN size)
+                         (.createGlyphVector frc text))
+        path-iters (map #(-> glyph-vector
+                             (.getGlyphOutline %)
+                             (.getPathIterator nil))
+                        (range (.getNumGlyphs glyph-vector)))
+        intersection-count-maps (map (fn [path-iter] (->> (path-iterator->segments path-iter)
+                                        (partition-by #(= (first %) :close))
+                                        (take-nth 2)
+                                        (map segments->lines)
+                                        (map flatten)
+                                        (map (partial partition 2))
+                                        split-even-odd-intersecting))
+                   path-iters)]
+    (->> (apply merge-with concat intersection-count-maps)
+         (sort-by first)
+         (map second))))
