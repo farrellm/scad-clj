@@ -81,14 +81,15 @@ and transforms each segment into a sequence of interpolated points"
     path))
 
 (defn- split-even-odd-intersecting [paths]
-  (let [polys (map path2d paths)
+  (let [poly-cache (zipmap paths (map path2d paths))
         poly-intersects-path? (fn [poly path]
                                 (some #(.contains poly
                                                   (first %) (second %))
                                       path))
         count-intersections (fn [path] (count
-                                        (filter #(poly-intersects-path? % path)
-                                                polys)))]
+                                        (filter #(or (= path %)
+                                                     (poly-intersects-path? (poly-cache %) path))
+                                                paths)))]
     (group-by count-intersections paths)))
 
 (defn text-parts [font size text]
