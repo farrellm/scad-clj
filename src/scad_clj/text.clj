@@ -80,22 +80,19 @@ and transforms each segment into a sequence of interpolated points"
       (.lineTo path (first point) (second point)))
     path))
 
-(defn- split-intersecting [paths]
-  (let [polygons (map path2d paths)
-        starting-points (map first paths)]
-    (reduce (fn [acc path]
-              (let [polygon (path2d path)]
-                (if (some #(.contains % (-> path first first) (-> path first second))
-                          (:polygons acc))
-                  (merge-with concat acc
-                              {:difference [path]})
-                  (merge-with concat acc
-                              {:polygons [polygon]
-                               :union [path]}))))
-            {:polygons []
-             :union []
-             :difference []}
-            paths)))
+(defn- split-even-odd-intersecting [paths]
+  (let [polys (map path2d paths)
+        poly-intersects-path? (fn [poly path]
+                                (some #(.contains poly
+                                                  (first %) (second %))
+                                      path))
+        count-intersections (fn [path] (count
+                                        (filter #(poly-intersects-path? % path)
+                                                polys)))
+        count-grouping (group-by count-intersections paths)]
+    (->> count-grouping
+         (sort-by first)
+         (map second))))
 
 (defn text-parts [font size text]
   (let [frc (FontRenderContext. nil
@@ -111,6 +108,5 @@ and transforms each segment into a sequence of interpolated points"
                    (map segments->lines)
                    (map flatten)
                    (map (partial partition 2)))]
-    (split-intersecting paths)))
-
+    (split-even-odd-intersecting paths)))
 
