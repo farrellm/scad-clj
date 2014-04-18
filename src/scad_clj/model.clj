@@ -118,8 +118,6 @@
   ([{:keys [convexity]} block] `(:extrude-rotate {:convexity ~convexity} ~block))
   )
 
-(let [{:keys [a]} {:a 3}] a)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; text
 
