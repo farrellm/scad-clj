@@ -82,6 +82,18 @@
    (write-block depth block)
    (list (indent depth) "}\n")))
 
+(defmethod write-expr :minkowski [depth [form & block]]
+  (concat
+   (list (indent depth) "minkowski () {\n")
+   (mapcat #(write-expr (+ depth 1) %1) block)
+   (list (indent depth) "}\n")))
+
+(defmethod write-expr :color [depth [form [r g b a] & block]]
+  (concat
+    (list (indent depth) "color ([" r ", " g ", " b ", " a"]) {\n")
+    (write-block depth block)
+    (list (indent depth) "}\n")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; combinators
 (defmethod write-expr :union [depth [form & block]]

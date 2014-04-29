@@ -67,6 +67,12 @@
 (defn mirror [[x y z] & block]
   `(:mirror [~x ~y ~z] ~@block))
 
+(defn minkowski [ & block]
+  `(:minkowski ~@block))
+
+(defn color [[r g b a] & block]
+  `(:color [~r ~g ~b ~a] ~@block))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; combinators
 
