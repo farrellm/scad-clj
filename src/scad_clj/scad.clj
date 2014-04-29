@@ -66,7 +66,7 @@
 
 (defmethod write-expr :rotate [depth [form [a [x y z]] & block]]
   (concat
-   (list (indent depth) "rotate (a=" (/ (* a 180) Math/PI) ", v=[" x "," y "," z "]) {\n")
+   (list (indent depth) "rotate (a=" (/ (* a 180) pi) ", v=[" x "," y "," z "]) {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
 

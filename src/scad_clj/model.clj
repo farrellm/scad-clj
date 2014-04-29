@@ -1,7 +1,7 @@
 (ns scad-clj.model
   (:use [clojure.core.match :only (match)])
   (:use [clojure.pprint])
-  (:use [scad-clj.text :only (text-parts)])  
+  (:use [scad-clj.text :only (text-parts)])
   )
 
 (def tau (* 2 Math/PI))
