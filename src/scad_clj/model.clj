@@ -1,14 +1,111 @@
 (ns scad-clj.model
   (:use [clojure.core.match :only (match)])
   (:use [clojure.pprint])
-  (:use [scad-clj.text :only (text-parts)])  
+  (:use [scad-clj.text :only (text-parts)])
   )
 
-(def tau (* 2 Math/PI))
 (def pi Math/PI)
+(def tau (* 2 pi))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; mesh
+;; 2D
+
+(defn square [x y]
+  `(:square {:x ~x :y ~y}))
+
+(defn circle [r]
+  `(:circle {:r ~r}))
+
+(defn polygon
+  ([points]
+     `(:polygon {:points ~points}))
+  ([points paths & {:keys [convexity]}]
+     `(:polygon {:points ~points :paths ~paths :convexity ~convexity}))
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 3D
+
+(defn sphere [r]
+  (let [args (merge {:r r}
+                    (if *fa* {:fa *fa*} {})
+                    (if *fn* {:fn *fn*} {})
+                    (if *fs* {:fs *fs*} {}))]
+    `(:sphere ~args)))
+
+(defn cube [x y z]
+  `(:cube {:x ~x :y ~y :z ~z}))
+
+(defn cylinder [rs h]
+  (let [fargs (merge (if *fa* {:fa *fa*} {})
+                     (if *fn* {:fn *fn*} {})
+                     (if *fs* {:fs *fs*} {}))]
+    (match [rs]
+      [[r1 r2]] `(:cylinder ~(merge fargs {:h h :r1 r1 :r2 r2}))
+      [r] `(:cylinder ~(merge fargs {:h h :r r})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; transformations
+
+(defn translate [[x y z] & block]
+  `(:translate [~x ~y ~z] ~@block))
+
+(defn rotate [a [x y z] & block]
+  `(:rotate [~a [~x ~y ~z]] ~@block))
+
+(defn scale [[x y z] & block]
+  `(:scale [~x ~y ~z] ~@block))
+
+(defn mirror [[x y z] & block]
+  `(:mirror [~x ~y ~z] ~@block))
+
+(defn color [[r g b a] & block]
+  `(:color [~r ~g ~b ~a] ~@block))
+
+(defn hull [ & block]
+  `(:hull  ~@block))
+
+(defn minkowski [ & block]
+  `(:minkowski ~@block))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Boolean operations
+
+(defn union [ & block]
+  `(:union  ~@block))
+
+(defn intersection [ & block]
+  `(:intersection  ~@block))
+
+(defn difference [ & block]
+  `(:difference  ~@block))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; other
+
+(defn extrude-linear [{:keys [height twist convexity]} & block]
+  `(:extrude-linear {:height ~height :twist ~twist :convexity ~convexity} ~@block))
+
+(defn extrude-rotate
+  ([ block ] `(:extrude-rotate {} ~block))
+  ([{:keys [convexity]} block] `(:extrude-rotate {:convexity ~convexity} ~block))
+  )
+
+(defn projection [cut & block]
+  `(:projection {:cut cut} ~@block))
+
+(defn project [& block]
+  `(:projection {:cut false} ~@block))
+
+(defn cut [& block]
+  `(:projection {:cut true} ~@block))
+
+(defn render [ & block]
+  `(:render ~@block))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; special variables
+
 (defn fa! [x]
   `(:fa ~x))
 
@@ -34,91 +131,6 @@
      (list ~@block)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; primitives
-(defn cylinder [rs h]
-  (let [fargs (merge (if *fa* {:fa *fa*} {})
-                     (if *fn* {:fn *fn*} {})
-                     (if *fs* {:fs *fs*} {}))]
-    (match [rs]
-      [[r1 r2]] `(:cylinder ~(merge fargs {:h h :r1 r1 :r2 r2}))
-      [r] `(:cylinder ~(merge fargs {:h h :r r})))))
-
-(defn sphere [r]
-  (let [args (merge {:r r}
-                    (if *fa* {:fa *fa*} {})
-                    (if *fn* {:fn *fn*} {})
-                    (if *fs* {:fs *fs*} {}))]
-    `(:sphere ~args)))
-
-(defn cube [x y z]
-  `(:cube {:x ~x :y ~y :z ~z}))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; operators
-(defn translate [[x y z] & block]
-  `(:translate [~x ~y ~z] ~@block))
-
-(defn rotate [a [x y z] & block]
-  `(:rotate [~a [~x ~y ~z]] ~@block))
-
-(defn scale [[x y z] & block]
-  `(:scale [~x ~y ~z] ~@block))
-
-(defn mirror [[x y z] & block]
-  `(:mirror [~x ~y ~z] ~@block))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; combinators
-
-(defn union [ & block]
-  `(:union  ~@block))
-
-(defn intersection [ & block]
-  `(:intersection  ~@block))
-
-(defn hull [ & block]
-  `(:hull  ~@block))
-
-(defn difference [ & block]
-  `(:difference  ~@block))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 2d primitives
-
-(defn square [x y]
-  `(:square {:x ~x :y ~y}))
-
-(defn circle [r]
-  `(:circle {:r ~r}))
-
-(defn polygon
-  ([points]
-     `(:polygon {:points ~points}))
-  ([points paths & {:keys [convexity]}]
-     `(:polygon {:points ~points :paths ~paths :convexity ~convexity}))
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; projection/extrusion
-
-(defn projection [cut & block]
-  `(:projection {:cut cut} ~@block))
-
-(defn cut [& block]
-  `(:projection {:cut true} ~@block))
-
-(defn project [& block]
-  `(:projection {:cut false} ~@block))
-
-(defn extrude-linear [{:keys [height twist convexity]} & block]
-  `(:extrude-linear {:height ~height :twist ~twist :convexity ~convexity} ~@block))
-
-(defn extrude-rotate
-  ([ block ] `(:extrude-rotate {} ~block))
-  ([{:keys [convexity]} block] `(:extrude-rotate {:convexity ~convexity} ~block))
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; text
 
 (defn text [font size text]
@@ -134,14 +146,7 @@
              even-odd-paths))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; other
-
-(defn render [ & block]
-  `(:render ~@block))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; extended
-
 
 (defn extrude-curve [{:keys [height radius angle n]} block]
   (let [lim (Math/floor (/ n 2))
