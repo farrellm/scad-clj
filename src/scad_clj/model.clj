@@ -8,6 +8,33 @@
 (def tau (* 2 pi))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; special variables
+
+(defn fa! [x]
+  `(:fa ~x))
+
+(defn fn! [x]
+  `(:fn ~x))
+
+(defn fs! [x]
+  `(:fs ~x))
+
+(def ^:dynamic *fa* false)
+(defmacro with-fa [x & block]
+  `(binding [*fa* ~x]
+     (list ~@block)))
+
+(def ^:dynamic *fn* false)
+(defmacro with-fn [x & block]
+  `(binding [*fn* ~x]
+     (list ~@block)))
+
+(def ^:dynamic *fs* false)
+(defmacro with-fs [x & block]
+  `(binding [*fs* ~x]
+     (list ~@block)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 
 (defn square [x y]
@@ -104,33 +131,6 @@
   `(:render ~@block))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; special variables
-
-(defn fa! [x]
-  `(:fa ~x))
-
-(defn fn! [x]
-  `(:fn ~x))
-
-(defn fs! [x]
-  `(:fs ~x))
-
-(def ^:dynamic *fa* false)
-(defmacro with-fa [x & block]
-  `(binding [*fa* ~x]
-     (list ~@block)))
-
-(def ^:dynamic *fn* false)
-(defmacro with-fn [x & block]
-  `(binding [*fn* ~x]
-     (list ~@block)))
-
-(def ^:dynamic *fs* false)
-(defmacro with-fs [x & block]
-  `(binding [*fs* ~x]
-     (list ~@block)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; text
 
 (defn text [font size text]
@@ -170,4 +170,3 @@
                          (extrude-linear {:height height}
                            block))))))
                 (range (- lim) (+ lim 1))))))
-
