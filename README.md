@@ -27,3 +27,5 @@ Latest release: 0.2.1
   <version>0.2.1</version>
 </dependency>
 ```
+
+[![Build Status](https://travis-ci.org/farrellm/scad-clj.svg?branch=master)](https://travis-ci.org/farrellm/scad-clj)
