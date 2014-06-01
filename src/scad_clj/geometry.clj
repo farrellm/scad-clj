@@ -1,15 +1,14 @@
 (ns scad-clj.geom
-  (:use [incanter.stats :only [euclidean-distance]]
-        [incanter.core :only [acos]]
+  (:use [clojure.core.matrix :only [distance]]
         [scad-clj.model]))
 
-(defn draw-line
+(defn line
   "this function will use all the fancy to draw a line from point A to
   point B"
   [from to]
   (let [diff (map - to from)
-        norm (euclidean-distance from to)
-        rotate-angle (acos (/ (last diff) norm))
+        norm (distance from to)
+        rotate-angle (Math/acos (/ (last diff) norm))
         rotate-axis [(- (nth diff 1)) (nth diff 0) 0]
         ]
     (->> (cylinder 1 norm)
