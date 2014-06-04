@@ -54,10 +54,6 @@
 (defmethod write-expr :call [depth [form {:keys [function args]}]]
   (list (indent depth) (name function ) "(" (make-arguments args) ");\n"  ))
 
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 
