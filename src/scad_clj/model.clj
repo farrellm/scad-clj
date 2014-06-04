@@ -47,8 +47,7 @@
   ([points]
      `(:polygon {:points ~points}))
   ([points paths & {:keys [convexity]}]
-     `(:polygon {:points ~points :paths ~paths :convexity ~convexity}))
-  )
+     `(:polygon {:points ~points :paths ~paths :convexity ~convexity})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3D
@@ -77,8 +76,17 @@
 (defn translate [[x y z] & block]
   `(:translate [~x ~y ~z] ~@block))
 
-(defn rotate [a [x y z] & block]
-  `(:rotate [~a [~x ~y ~z]] ~@block))
+; multi-arity can't have more than one signature with variable arity. '&'.
+(defn rotatev [a [x y z] & block]
+  `(:rotatev [~a [~x ~y ~z]] ~@block))
+
+(defn rotatec [[x y z] & block]
+  `(:rotatec [~x ~y ~z] ~@block))
+
+(defn rotate [& block]
+  (if (= (type (first block)) java.lang.Long)
+    (rotatev (first block) (second block) (rest (rest block)))
+    (rotatec (first block) (rest block))))
 
 (defn scale [[x y z] & block]
   `(:scale [~x ~y ~z] ~@block))
