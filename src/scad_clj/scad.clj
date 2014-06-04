@@ -39,6 +39,7 @@
         piece (condp = (type arg)
                 clojure.lang.PersistentVector (str "[" (make-arguments arg) "]")
                 clojure.lang.PersistentArrayMap (map-to-arg-string arg)
+                clojure.lang.PersistentHashMap (map-to-arg-string arg)
                 arg)]
     (if (empty? rest)
       piece
