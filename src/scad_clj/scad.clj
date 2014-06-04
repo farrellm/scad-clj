@@ -29,6 +29,35 @@
   (mapcat #(write-expr (+ depth 1) %1) block))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; include and call into scad libraries.
+
+(declare map-to-arg-string)
+
+(defn make-arguments [args]
+  (let [arg (first args)
+        rest (rest args)
+        piece (condp = (type arg)
+                clojure.lang.PersistentVector (str "[" (make-arguments arg) "]")
+                clojure.lang.PersistentArrayMap (map-to-arg-string arg)
+                arg)]
+    (if (empty? rest)
+      piece
+      (join ", " [piece (make-arguments rest)]))))
+
+(defn map-to-arg-string [m]
+  (join ", " (map (fn [[k v]] (str (name k) "=" (make-arguments [v])) ) m)))
+
+(defmethod write-expr :include [depth [form {:keys [library]}]]
+  (list (indent depth) "include <" library">\n"  ))
+
+(defmethod write-expr :call [depth [form {:keys [function args]}]]
+  (list (indent depth) (name function ) "(" (make-arguments args) ");\n"  ))
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 
 (defmethod write-expr :circle [depth [form {:keys [r]}]]
@@ -179,4 +208,3 @@
 
 (defn write-scad [& block]
   (apply str (write-expr 0 block)))
-
