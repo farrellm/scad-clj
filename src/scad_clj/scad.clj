@@ -34,8 +34,9 @@
 (defmethod write-expr :circle [depth [form {:keys [r]}]]
   (list (indent depth) "circle (r = " r ");\n"))
 
-(defmethod write-expr :square [depth [form {:keys [x y]}]]
-  (list (indent depth) "square ([" x ", " y "], center=true);\n"))
+(defmethod write-expr :square [depth [form {:keys [x y center] :or {center false}}]]
+  (list (indent depth) "square ([" x ", " y "]"
+        (when center ", center=true") ");\n"))
 
 (defmethod write-expr :polygon [depth [form {:keys [points paths convexity]}]]
   `(~@(indent depth) "polygon ("
@@ -47,25 +48,29 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3D
 
-(defmethod write-expr :sphere [depth [form {:keys [r fa fn fs]}]]
+(defmethod write-expr :sphere [depth [form {:keys [r fa fn fs center] :or {center false}}]]
   (let [fargs (str (and fa (str "$fa=" fa ", "))
                    (and fn (str "$fn=" fn ", "))
                    (and fs (str "$fs=" fs ", ")))]
-    (list (indent depth) "sphere (" fargs "r=" r ", center=true);\n")))
+    (list (indent depth) "sphere (" fargs "r=" r
+          (when center ", center=true") ");\n")))
 
-(defmethod write-expr :cube [depth [form {:keys [x y z]}]]
-  (list (indent depth) "cube ([" x ", " y ", " z "], center=true);\n"))
+(defmethod write-expr :cube [depth [form {:keys [x y z center] :or {center false}}]]
+  (list (indent depth) "cube ([" x ", " y ", " z "]"
+        (when center ", center=true") ");\n"))
 
-(defmethod write-expr :cylinder [depth [form {:keys [h r r1 r2 fa fn fs]}]]
+(defmethod write-expr :cylinder [depth [form {:keys [h r r1 r2 fa fn fs center] :or {center false}}]]
   (let [fargs (str (and fa (str "$fa=" fa ", "))
                    (and fn (str "$fn=" fn ", "))
                    (and fs (str "$fs=" fs ", ")))]
-    (concat `(~(indent depth) "cylinder (" ~fargs "h=" ~h)
-            (if (nil? r) (list ", r1=" r1 ", r2=" r2) (list ", r=" r))
-            `(", center=true);\n"))))
+    (concat
+     (list (indent depth) "cylinder (" fargs "h=" h)
+     (if (nil? r) (list ", r1=" r1 ", r2=" r2) (list ", r=" r))
+     (when center ", center=true")
+     ");\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; transformations
+    ;; transformations
 
 (defmethod write-expr :translate [depth [form [x y z] & block]]
   (concat
@@ -139,12 +144,14 @@
    (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
-(defmethod write-expr :extrude-linear [depth [form {:keys [height twist convexity]} & block]]
+(defmethod write-expr :extrude-linear [depth [form {:keys [height twist convexity center]
+                                                    :or {center false}} & block]]
   (concat
    (list (indent depth) "linear_extrude (height=" height)
    (if (nil? twist) [] (list ", twist=" twist))
    (if (nil? convexity) [] (list ", convexity=" convexity))
-   (list ", center=true) {\n")
+   (when center ", center=true") "){\n"
+
    (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
@@ -179,4 +186,3 @@
 
 (defn write-scad [& block]
   (apply str (write-expr 0 block)))
-
