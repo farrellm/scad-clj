@@ -35,6 +35,18 @@
      (list ~@block)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Modifier
+
+(defn modifier [modifier]
+  (if (some #{modifier} [:# :% :* :!])
+    `(:modifier ~(name modifier))))
+
+(defn !# [] (modifier :#))
+(defn !% [] (modifier :%))
+(defn !* [] (modifier :*))
+(defn !! [] (modifier :!))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 
 (defn square [x y]
@@ -47,8 +59,7 @@
   ([points]
      `(:polygon {:points ~points}))
   ([points paths & {:keys [convexity]}]
-     `(:polygon {:points ~points :paths ~paths :convexity ~convexity}))
-  )
+     `(:polygon {:points ~points :paths ~paths :convexity ~convexity})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3D

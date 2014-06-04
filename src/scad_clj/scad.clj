@@ -29,6 +29,12 @@
   (mapcat #(write-expr (+ depth 1) %1) block))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Modifier
+
+(defmethod write-expr :modifier [depth [form modifier]]
+  (list (indent depth) modifier ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 
 (defmethod write-expr :circle [depth [form {:keys [r]}]]
@@ -179,4 +185,3 @@
 
 (defn write-scad [& block]
   (apply str (write-expr 0 block)))
-
