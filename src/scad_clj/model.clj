@@ -71,6 +71,9 @@
       [[r1 r2]] `(:cylinder ~(merge fargs {:h h :r1 r1 :r2 r2}))
       [r] `(:cylinder ~(merge fargs {:h h :r r})))))
 
+(defn polyhedron [points faces]
+  `(:polyhedron {:points ~points :faces ~faces}))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transformations
 
