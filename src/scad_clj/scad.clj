@@ -64,10 +64,11 @@
             (if (nil? r) (list ", r1=" r1 ", r2=" r2) (list ", r=" r))
             `(", center=true);\n"))))
 
-(defmethod write-expr :polyhedron [depth [form {:keys [points faces]}]]
+(defmethod write-expr :polyhedron [depth [form {:keys [points faces convexity]}]]
   `(~@(indent depth) "polyhedron ("
     "points=[[" ~(join "], [" (map #(join ", " %1) points)) "]], "
     "faces=[[" ~(join "], [" (map #(join ", " %1) faces)) "]]"
+    ~@(if (nil? convexity) [] [", convexity=" convexity])
     ");\n"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
