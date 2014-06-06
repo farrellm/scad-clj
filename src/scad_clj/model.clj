@@ -40,8 +40,8 @@
 (defn include [library]
   `(:include {:library ~library}))
 
-(defn call [function args]
-  `(:call {:function ~function :args ~args}))
+(defn call [function & args]
+  `(:call {:function ~(name function)} ~args))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D

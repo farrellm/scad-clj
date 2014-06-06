@@ -51,8 +51,8 @@
 (defmethod write-expr :include [depth [form {:keys [library]}]]
   (list (indent depth) "include <" library">\n"  ))
 
-(defmethod write-expr :call [depth [form {:keys [function args]}]]
-  (list (indent depth) (name function ) "(" (make-arguments args) ");\n"  ))
+(defmethod write-expr :call [depth [form {:keys [function]} & args]]
+  (list (indent depth) function  "(" (make-arguments (apply vec args)) ");\n"  ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
