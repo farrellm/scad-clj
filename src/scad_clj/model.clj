@@ -84,7 +84,7 @@
   `(:rotatec [~x ~y ~z] ~@block))
 
 (defn rotate [& block]
-  (if (= (type (first block)) java.lang.Long)
+  (if (number? (first block))
     (rotatev (first block) (second block) (rest (rest block)))
     (rotatec (first block) (rest block))))
 
