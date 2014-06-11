@@ -37,14 +37,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Modifier
 
-(defn modifier [modifier]
+(defn modifier [modifier & block]
   (if (some #{modifier} [:# :% :* :!])
-    `(:modifier ~(name modifier))))
+    `(:modifier ~(name modifier) ~@block)))
 
-(defn !# [] (modifier :#))
-(defn !% [] (modifier :%))
-(defn !* [] (modifier :*))
-(defn !! [] (modifier :!))
+(defn !# [& block] (modifier :# block))
+(defn !% [& block] (modifier :% block))
+(defn !* [& block] (modifier :* block))
+(defn !! [& block] (modifier :! block))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D

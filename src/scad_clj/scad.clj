@@ -31,8 +31,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Modifier
 
-(defmethod write-expr :modifier [depth [form modifier]]
-  (list (indent depth) modifier ))
+(defmethod write-expr :modifier [depth [form modifier & block]]
+  (concat
+   (list (indent depth) modifier "union () {\n")
+   (write-block depth block)
+   (list (indent depth) "}\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
