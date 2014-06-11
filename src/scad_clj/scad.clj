@@ -36,11 +36,10 @@
 (defn make-arguments [args]
   (let [arg (first args)
         rest (rest args)
-        piece (condp = (type arg)
-                clojure.lang.PersistentVector (str "[" (make-arguments arg) "]")
-                clojure.lang.PersistentArrayMap (map-to-arg-string arg)
-                clojure.lang.PersistentHashMap (map-to-arg-string arg)
-                arg)]
+        piece (cond
+               (map? arg) (map-to-arg-string arg)
+               (coll? arg) (str "[" (make-arguments arg) "]")
+               :else arg)]
     (if (empty? rest)
       piece
       (join ", " [piece (make-arguments rest)]))))
