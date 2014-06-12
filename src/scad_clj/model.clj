@@ -35,6 +35,15 @@
      (list ~@block)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Include & call into Scad libraries
+
+(defn include [library]
+  `(:include {:library ~library}))
+
+(defn call [function & args]
+  `(:call {:function ~(name function)} ~args))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 
 (defn square [x y]
@@ -47,8 +56,7 @@
   ([points]
      `(:polygon {:points ~points}))
   ([points paths & {:keys [convexity]}]
-     `(:polygon {:points ~points :paths ~paths :convexity ~convexity}))
-  )
+     `(:polygon {:points ~points :paths ~paths :convexity ~convexity})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3D
