@@ -22,6 +22,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; utility
 
+(defn rtod [radians]
+  (/ (* radians 180) pi))
+
 (defn indent [depth]
   (apply str (repeat depth "  ")))
 
@@ -98,9 +101,15 @@
    (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
-(defmethod write-expr :rotate [depth [form [a [x y z]] & block]]
+(defmethod write-expr :rotatev [depth [form [a [x y z]] & block]]
   (concat
    (list (indent depth) "rotate (a=" (/ (* a 180) pi) ", v=[" x ", " y ", " z "]) {\n")
+   (write-block depth block)
+   (list (indent depth) "}\n")))
+
+(defmethod write-expr :rotatec [depth [form [x y z]] & block]
+  (concat
+   (list (indent depth) "rotate ([" (rtod x) "," (rtod y) "," (rtod z) "]) {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
 
