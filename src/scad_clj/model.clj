@@ -43,7 +43,7 @@
 (defn use [library]
   `(:use {:library ~library}))
 
-(defn libraries [{uses :use includes :include }]
+(defn libraries [& {uses :use includes :include}]
   (concat
    (map use uses)
    (map include includes)))
