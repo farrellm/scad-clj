@@ -33,7 +33,7 @@
 
 (def center-default (atom true))
 
-(defn centering [x]
+(defn centering! [x]
   (reset! center-default x))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -78,7 +78,7 @@
      ");\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;; transformations
+;; transformations
 
 (defmethod write-expr :translate [depth [form [x y z] & block]]
   (concat
