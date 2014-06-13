@@ -35,6 +35,23 @@
      (list ~@block)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Include & call into Scad libraries
+
+(defn include [library]
+  `(:include {:library ~library}))
+
+(defn use [library]
+  `(:use {:library ~library}))
+
+(defn libraries [& {uses :use includes :include}]
+  (concat
+   (map use uses)
+   (map include includes)))
+
+(defn call [function & args]
+  `(:call {:function ~(name function)} ~args))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 
 (defn square [x y & {:keys [center]}]
@@ -73,14 +90,29 @@
       [[r1 r2]] `(:cylinder ~(merge fargs {:h h :r1 r1 :r2 r2}))
       [r] `(:cylinder ~(merge fargs {:h h :r r})))))
 
+(defn polyhedron
+  ([points faces]
+    `(:polyhedron {:points ~points :faces ~faces}))
+  ([points faces & {:keys [convexity]}]
+    `(:polyhedron {:points ~points :faces ~faces :convexity ~convexity})))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transformations
 
 (defn translate [[x y z] & block]
   `(:translate [~x ~y ~z] ~@block))
 
-(defn rotate [a [x y z] & block]
-  `(:rotate [~a [~x ~y ~z]] ~@block))
+; multi-arity can't have more than one signature with variable arity. '&'.
+(defn rotatev [a [x y z] & block]
+  `(:rotatev [~a [~x ~y ~z]] ~@block))
+
+(defn rotatec [[x y z] & block]
+  `(:rotatec [~x ~y ~z] ~@block))
+
+(defn rotate [& block]
+  (if (number? (first block))
+    (rotatev (first block) (second block) (rest (rest block)))
+    (rotatec (first block) (rest block))))
 
 (defn scale [[x y z] & block]
   `(:scale [~x ~y ~z] ~@block))
