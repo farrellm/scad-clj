@@ -32,6 +32,14 @@
   (mapcat #(write-expr (+ depth 1) %1) block))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Default centering control
+
+(def center-default (atom true))
+
+(defn centering! [x]
+  (reset! center-default x))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; include and call into scad libraries.
 
 (declare map-to-arg-string)
@@ -65,8 +73,9 @@
 (defmethod write-expr :circle [depth [form {:keys [r]}]]
   (list (indent depth) "circle (r = " r ");\n"))
 
-(defmethod write-expr :square [depth [form {:keys [x y]}]]
-  (list (indent depth) "square ([" x ", " y "], center=true);\n"))
+(defmethod write-expr :square [depth [form {:keys [x y center] :or {center @center-default}}]]
+  (list (indent depth) "square ([" x ", " y "]"
+        (when center ", center=true") ");\n"))
 
 (defmethod write-expr :polygon [depth [form {:keys [points paths convexity]}]]
   `(~@(indent depth) "polygon ("
@@ -78,22 +87,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3D
 
-(defmethod write-expr :sphere [depth [form {:keys [r fa fn fs]}]]
+(defmethod write-expr :sphere [depth [form {:keys [r fa fn fs center] :or {center @center-default}}]]
   (let [fargs (str (and fa (str "$fa=" fa ", "))
                    (and fn (str "$fn=" fn ", "))
                    (and fs (str "$fs=" fs ", ")))]
-    (list (indent depth) "sphere (" fargs "r=" r ", center=true);\n")))
+    (list (indent depth) "sphere (" fargs "r=" r
+          (when center ", center=true") ");\n")))
 
-(defmethod write-expr :cube [depth [form {:keys [x y z]}]]
-  (list (indent depth) "cube ([" x ", " y ", " z "], center=true);\n"))
+(defmethod write-expr :cube [depth [form {:keys [x y z center] :or {center @center-default}}]]
+  (list (indent depth) "cube ([" x ", " y ", " z "]"
+        (when center ", center=true") ");\n"))
 
-(defmethod write-expr :cylinder [depth [form {:keys [h r r1 r2 fa fn fs]}]]
+(defmethod write-expr :cylinder [depth [form {:keys [h r r1 r2 fa fn fs center] :or {center @center-default}}]]
   (let [fargs (str (and fa (str "$fa=" fa ", "))
                    (and fn (str "$fn=" fn ", "))
                    (and fs (str "$fs=" fs ", ")))]
-    (concat `(~(indent depth) "cylinder (" ~fargs "h=" ~h)
-            (if (nil? r) (list ", r1=" r1 ", r2=" r2) (list ", r=" r))
-            `(", center=true);\n"))))
+    (concat
+     (list (indent depth) "cylinder (" fargs "h=" h)
+     (if (nil? r) (list ", r1=" r1 ", r2=" r2) (list ", r=" r))
+     (when center ", center=true")
+     ");\n")))
 
 (defmethod write-expr :polyhedron [depth [form {:keys [points faces convexity]}]]
   `(~@(indent depth) "polyhedron ("
@@ -183,12 +196,14 @@
    (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
-(defmethod write-expr :extrude-linear [depth [form {:keys [height twist convexity]} & block]]
+(defmethod write-expr :extrude-linear [depth [form {:keys [height twist convexity center]
+                                                    :or {center @center-default}} & block]]
   (concat
    (list (indent depth) "linear_extrude (height=" height)
    (if (nil? twist) [] (list ", twist=" twist))
    (if (nil? convexity) [] (list ", convexity=" convexity))
-   (list ", center=true) {\n")
+   (when center ", center=true") "){\n"
+
    (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
