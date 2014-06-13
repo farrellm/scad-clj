@@ -40,6 +40,9 @@
 (defn include [library]
   `(:include {:library ~library}))
 
+(defn import-file [file]
+  `(:import ~file))
+
 (defn call [function & args]
   `(:call {:function ~(name function)} ~args))
 
