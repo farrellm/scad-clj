@@ -37,7 +37,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Include & call into Scad libraries
 
-(defn import-file [file]
+(defn import [file]
   `(:import ~file))
 
 (defn include [library]
