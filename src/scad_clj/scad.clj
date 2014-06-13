@@ -53,6 +53,9 @@
 (defmethod write-expr :include [depth [form {:keys [library]}]]
   (list (indent depth) "include <" library">\n"  ))
 
+(defmethod write-expr :use [depth [form {:keys [library]}]]
+  (list (indent depth) "use <" library">\n"  ))
+
 (defmethod write-expr :import [depth [form file]]
   (list (indent depth) "import (\"" file "\");\n"  ))
 

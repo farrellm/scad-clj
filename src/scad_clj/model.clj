@@ -37,11 +37,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Include & call into Scad libraries
 
+(defn import-file [file]
+  `(:import ~file))
+
 (defn include [library]
   `(:include {:library ~library}))
 
-(defn import-file [file]
-  `(:import ~file))
+(defn use [library]
+  `(:use {:library ~library}))
+
+(defn libraries [& {uses :use includes :include}]
+  (concat
+   (map use uses)
+   (map include includes)))
 
 (defn call [function & args]
   `(:call {:function ~(name function)} ~args))
