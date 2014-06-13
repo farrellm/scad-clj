@@ -22,6 +22,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; utility
 
+(defn rtod [radians]
+  (/ (* radians 180) pi))
+
 (defn indent [depth]
   (apply str (repeat depth "  ")))
 
@@ -36,6 +39,34 @@
    (list (indent depth) modifier "union () {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; include and call into scad libraries.
+
+(declare map-to-arg-string)
+
+(defn make-arguments [args]
+  (let [arg (first args)
+        rest (rest args)
+        piece (cond
+               (map? arg) (map-to-arg-string arg)
+               (coll? arg) (str "[" (make-arguments arg) "]")
+               :else arg)]
+    (if (empty? rest)
+      piece
+      (join ", " [piece (make-arguments rest)]))))
+
+(defn map-to-arg-string [m]
+  (join ", " (map (fn [[k v]] (str (name k) "=" (make-arguments [v])) ) m)))
+
+(defmethod write-expr :include [depth [form {:keys [library]}]]
+  (list (indent depth) "include <" library">\n"  ))
+
+(defmethod write-expr :use [depth [form {:keys [library]}]]
+  (list (indent depth) "use <" library">\n"  ))
+
+(defmethod write-expr :call [depth [form {:keys [function]} & args]]
+  (list (indent depth) function  "(" (make-arguments (apply vec args)) ");\n"  ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
@@ -73,6 +104,13 @@
             (if (nil? r) (list ", r1=" r1 ", r2=" r2) (list ", r=" r))
             `(", center=true);\n"))))
 
+(defmethod write-expr :polyhedron [depth [form {:keys [points faces convexity]}]]
+  `(~@(indent depth) "polyhedron ("
+    "points=[[" ~(join "], [" (map #(join ", " %1) points)) "]], "
+    "faces=[[" ~(join "], [" (map #(join ", " %1) faces)) "]]"
+    ~@(if (nil? convexity) [] [", convexity=" convexity])
+    ");\n"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transformations
 
@@ -82,9 +120,15 @@
    (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
-(defmethod write-expr :rotate [depth [form [a [x y z]] & block]]
+(defmethod write-expr :rotatev [depth [form [a [x y z]] & block]]
   (concat
    (list (indent depth) "rotate (a=" (/ (* a 180) pi) ", v=[" x ", " y ", " z "]) {\n")
+   (write-block depth block)
+   (list (indent depth) "}\n")))
+
+(defmethod write-expr :rotatec [depth [form [x y z]] & block]
+  (concat
+   (list (indent depth) "rotate ([" (rtod x) "," (rtod y) "," (rtod z) "]) {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
 
