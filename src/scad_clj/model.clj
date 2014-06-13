@@ -41,10 +41,10 @@
   (if (some #{modifier} [:# :% :* :!])
     `(:modifier ~(name modifier) ~@block)))
 
-(defn |# [& block] (modifier :# block))
-(defn |% [& block] (modifier :% block))
-(defn |* [& block] (modifier :* block))
-(defn |! [& block] (modifier :! block))
+(defn -# [& block] (modifier :# block))
+(defn -% [& block] (modifier :% block))
+(defn -* [& block] (modifier :* block))
+(defn -! [& block] (modifier :! block))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Include & call into Scad libraries
