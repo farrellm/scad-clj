@@ -40,6 +40,14 @@
 (defn include [library]
   `(:include {:library ~library}))
 
+(defn use [library]
+  `(:use {:library ~library}))
+
+(defn libraries [& {uses :use includes :include}]
+  (concat
+   (map use uses)
+   (map include includes)))
+
 (defn call [function & args]
   `(:call {:function ~(name function)} ~args))
 
