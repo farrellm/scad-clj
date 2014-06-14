@@ -96,9 +96,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transformations
 
-(defn scale [[x y z] & block]
-  `(:scale [~x ~y ~z] ~@block))
-
 (defn resize[[x y z] & block]
   (let [is-auto (and (keyword? (first block))
                      (= :auto (first block)))

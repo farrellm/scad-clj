@@ -105,12 +105,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transformations
 
-(defmethod write-expr :scale [depth [form [x y z] & block]]
-  (concat
-   (list (indent depth) "scale ([" x ", " y ", " z "]) {\n")
-   (mapcat #(write-expr (+ depth 1) %1) block)
-   (list (indent depth) "}\n")))
-
 (defmethod write-expr :resize [depth [form {:keys [x y z auto]} & block]]
   (concat
    (list (indent depth) "resize ([" x ", " y ", " z "]")
