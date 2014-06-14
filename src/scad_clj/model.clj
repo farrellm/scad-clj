@@ -114,6 +114,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transformations
 
+(defn resize[[x y z] & block]
+  (let [is-auto (and (keyword? (first block))
+                     (= :auto (first block)))
+        auto (if is-auto (second block))
+        block (if is-auto (rest (rest block)) block)]
+    `(:resize {:x ~x :y ~y :z ~z :auto ~auto} ~@block)))
+
 (defn translate [[x y z] & block]
   `(:translate [~x ~y ~z] ~@block))
 

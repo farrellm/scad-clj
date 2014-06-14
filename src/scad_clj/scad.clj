@@ -130,6 +130,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transformations
 
+(defmethod write-expr :resize [depth [form {:keys [x y z auto]} & block]]
+  (concat
+   (list (indent depth) "resize ([" x ", " y ", " z "]")
+   (list (when (not (nil? auto))
+           (str " auto="
+                (if (coll? auto)
+                  (str "[" (join ", " (map #(true? %) auto)) "]")
+                  (true? auto)))))
+   "){\n"
+   (mapcat #(write-expr (+ depth 1) %1) block)
+   (list (indent depth) "}\n")))
+
 (defmethod write-expr :translate [depth [form [x y z] & block]]
   (concat
    (list (indent depth) "translate ([" x ", " y ", " z "]) {\n")
