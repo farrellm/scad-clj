@@ -40,6 +40,15 @@
   (reset! center-default x))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Modifier
+
+(defmethod write-expr :modifier [depth [form modifier & block]]
+  (concat
+   (list (indent depth) modifier "union () {\n")
+   (write-block depth block)
+   (list (indent depth) "}\n")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; include and call into scad libraries.
 
 (declare map-to-arg-string)
