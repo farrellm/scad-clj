@@ -64,6 +64,9 @@
 (defmethod write-expr :use [depth [form {:keys [library]}]]
   (list (indent depth) "use <" library">\n"  ))
 
+(defmethod write-expr :import [depth [form file]]
+  (list (indent depth) "import (\"" file "\");\n"  ))
+
 (defmethod write-expr :call [depth [form {:keys [function]} & args]]
   (list (indent depth) function  "(" (make-arguments (apply vec args)) ");\n"  ))
 
