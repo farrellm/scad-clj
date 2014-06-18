@@ -1,10 +1,8 @@
 (ns scad-clj.scad
-  (:use [clojure.java.io :only [writer]])
-  (:use [clojure.string :only [join]])
-  (:use [clojure.core.match :only (match)])
-  (:use [scad-clj.model])
-  (:use [clojure.pprint])
-  )
+  ;; (:refer-clojure :exclude [import use])
+  (:require [clojure.string :refer [join]]
+            [scad-clj.model :refer [pi]]
+            ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; multimethod

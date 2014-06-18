@@ -1,9 +1,8 @@
 (ns scad-clj.model
   (:refer-clojure :exclude [import use])
-  (:use [clojure.core.match :only (match)])
-  (:use [clojure.pprint])
-  (:use [scad-clj.text :only (text-parts)])
-  )
+  (:require [clojure.core.match :refer [match]]
+            [scad-clj.text :refer [text-parts]]
+            ))
 
 (def pi Math/PI)
 (def tau (* 2 pi))
