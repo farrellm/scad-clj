@@ -1,4 +1,5 @@
 (ns scad-clj.model
+  (:refer-clojure :exclude [import use])
   (:use [clojure.core.match :only (match)])
   (:use [clojure.pprint])
   (:use [scad-clj.text :only (text-parts)])
