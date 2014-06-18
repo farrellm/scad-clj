@@ -1,5 +1,5 @@
 (ns scad-clj.gear
-  (:require [scad-clj.model :refer :all]
+  (:require [scad-clj.model :refer :all :exclude [import use]]
             [scad-clj.scad :refer :all]
             [clojure.core.matrix :refer [matrix mmul]])
   (:import [java.lang.Math]))
@@ -76,13 +76,31 @@
   (/ tau radial-pitch pitch-radius))
 
 (defn tooth-position [{:keys [pitch-radius radial-pitch] :as args} rotation angle]
-  (/ (rem angle (angular-width args))
+  (/ (rem (- angle rotation) (angular-width args))
      (angular-width args)))
 
-(defn mate-to [args1 args2 rot2 theta]
-  (let []))
+(defn mate-to [args1 rot1 args2 rot2 theta]
+  (let [pos1 (tooth-position args1 rot1 theta)
+        pos2 (tooth-position args2 rot2 (+ theta (/ tau 2)))
+        tgt (- 1 pos1)
+        phi (* (- pos2 tgt) (angular-width args2))]
+    ;; [pos1 pos2 tgt phi]
+    phi
+    ))
 
-
+(defn planetary [args1 args2 n]
+  (union
+   (gear args1)
+   (map
+    (bound-fn [i]
+      (let [theta (* i (/ tau n))]
+        (rotate theta [0 0 1]
+                (translate [(+ (:pitch-radius args1)
+                               (:pitch-radius args2)) 0 0]
+                           (rotate
+                            (mate-to args1 0 args2 theta theta) [0 0 1]
+                            (gear args2))))))
+    (range n))))
 
 ;; sample spur gear
 
@@ -93,7 +111,7 @@
 (def args2 (assoc args1
              :pitch-radius 5))
 
-(tooth-position args1 0 0)
+
 (tooth-position args2 0 (/ tau 2))
 
 (comment
@@ -101,4 +119,10 @@
                   (union
                    (gear args1)
                    (translate [15 0 0]
-                              (gear args2)))))
+                              (rotate
+                               (mate-to args1 0 args2 0 0) [0 0 1]
+                               (gear args2))))))
+
+(comment
+  (extrude-linear {:height 3}
+                  (planetary args1 args2 7)))
