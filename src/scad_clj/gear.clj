@@ -5,6 +5,7 @@
   (:import [java.lang.Math]))
 
 (def ^:dynamic *n-involute* 5)
+(def epsilon 1e-9)
 
 (defn sq [x]
   (* x x))
@@ -85,12 +86,25 @@
         tgt (- 1 pos1)
         phi (* (- pos2 tgt) (angular-width args2))]
     ;; [pos1 pos2 tgt phi]
-    phi
-    ))
+    phi))
 
-(defn planetary [args1 args2 n]
+(defn extrude-herringbone [{:keys [height radius angle]} & block]
+  (let [height-p (+ (/ height 2.) epsilon)
+        arc-len (/ height-p (Math/tan angle))
+        twist (/ arc-len radius)]
+    (union
+     (apply extrude-linear {:height height-p
+                            :twist twist} block)
+     (translate [0 0 height]
+                (mirror [0 0 1]
+                        (apply extrude-linear {:height height-p
+                                               :twist twist} block))))))
+
+(defn planetary [args1 args2 & {:keys [n height angle]}]
   (union
-   (gear args1)
+   (extrude-herringbone
+    {:height height, :angle angle, :radius (:pitch-radius args1)}
+    (gear args1))
    (map
     (bound-fn [i]
       (let [theta (* i (/ tau n))]
@@ -99,8 +113,12 @@
                                (:pitch-radius args2)) 0 0]
                            (rotate
                             (mate-to args1 0 args2 theta theta) [0 0 1]
-                            (gear args2))))))
-    (range n))))
+                            (extrude-herringbone {:height height, :angle angle
+                                                  :radius (:pitch-radius args2)}
+                             (gear args2)))))))
+    (range n))
+   ))
+
 
 ;; sample spur gear
 
@@ -126,3 +144,8 @@
 (comment
   (extrude-linear {:height 3}
                   (planetary args1 args2 7)))
+
+(comment
+  (planetary args1 args2
+             :n 7, :height 3, :angle (/ tau 8)))
+
