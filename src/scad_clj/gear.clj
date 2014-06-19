@@ -10,8 +10,8 @@
 (defn sq [x]
   (* x x))
 
-(defn rad->deg [a]
-  (* 360 (/ a tau)))
+;; (defn rad->deg [a]
+;;   (* 360 (/ a tau)))
 
 (defn rot-z [t]
   (matrix [[(Math/cos t)     (Math/sin t) 0.]
@@ -63,7 +63,7 @@
                      profile)))))
 
 ;; radial-pitch: teath per tau units of circumference
-(defn gear [{:keys [pitch-radius radial-pitch pressure-angle
+(defn external-gear [{:keys [pitch-radius radial-pitch pressure-angle
                     tooth-ratio addendum] :as args}]
   (let [tooth (tooth args)]
     (rotate (/ tau 4) [0 0 -1]
@@ -104,7 +104,7 @@
   (union
    (extrude-herringbone
     {:height height, :angle angle, :radius (:pitch-radius args1)}
-    (gear args1))
+    (external-gear args1))
    (map
     (bound-fn [i]
       (let [theta (* i (/ tau n))]
@@ -115,10 +115,9 @@
                             (mate-to args1 0 args2 theta theta) [0 0 1]
                             (extrude-herringbone {:height height, :angle angle
                                                   :radius (:pitch-radius args2)}
-                             (gear args2)))))))
+                             (external-gear args2)))))))
     (range n))
    ))
-
 
 ;; sample spur gear
 
@@ -129,21 +128,14 @@
 (def args2 (assoc args1
              :pitch-radius 5))
 
-
-(tooth-position args2 0 (/ tau 2))
-
 (comment
   (extrude-linear {:height 3}
                   (union
-                   (gear args1)
+                   (external-gear args1)
                    (translate [15 0 0]
                               (rotate
                                (mate-to args1 0 args2 0 0) [0 0 1]
-                               (gear args2))))))
-
-(comment
-  (extrude-linear {:height 3}
-                  (planetary args1 args2 7)))
+                               (external-gear args2))))))
 
 (comment
   (planetary args1 args2
