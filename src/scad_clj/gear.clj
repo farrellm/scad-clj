@@ -73,6 +73,15 @@
                     (map (fn [i] (rotate (* i (/ tau radial-pitch pitch-radius)) [0 0 1] tooth))
                          (range (* radial-pitch pitch-radius))))))))
 
+(defn internal-gear [{:keys [pitch-radius radial-pitch pressure-angle
+                             tooth-ratio addendum
+                             outer-radius inner-radius] :as args}]
+  (rotate (/ (angular-width args) 2.) [0 0 1]
+   (difference
+    (circle outer-radius)
+    (external-gear args)
+    (circle inner-radius))))
+
 (defn angular-width [{:keys [pitch-radius radial-pitch] :as args}]
   (/ tau radial-pitch pitch-radius))
 
@@ -100,24 +109,42 @@
                         (apply extrude-linear {:height height-p
                                                :twist twist} block))))))
 
-(defn planetary [args1 args2 & {:keys [n height angle]}]
-  (union
-   (extrude-herringbone
-    {:height height, :angle angle, :radius (:pitch-radius args1)}
-    (external-gear args1))
-   (map
-    (bound-fn [i]
-      (let [theta (* i (/ tau n))]
-        (rotate theta [0 0 1]
-                (translate [(+ (:pitch-radius args1)
-                               (:pitch-radius args2)) 0 0]
-                           (rotate
-                            (mate-to args1 0 args2 theta theta) [0 0 1]
-                            (extrude-herringbone {:height height, :angle angle
-                                                  :radius (:pitch-radius args2)}
-                             (external-gear args2)))))))
-    (range n))
-   ))
+(defn revolve [radius1 radius2 theta & block]
+  (rotate theta [0 0 1]
+          (translate
+           [(+ radius1 radius2) 0 0]
+           (rotate (/ (* theta radius1) radius2) [0 0 1]
+                   (apply rotate (/ tau 2.) [0 0 1]
+                          block)))))
+
+(defn planetary [args1 args2 & {:keys [n height angle outer-radius]}]
+  (let [radius (+ (:pitch-radius args1)
+                  (* 2 (:pitch-radius args2)))
+        ring (internal-gear (assoc args2
+                         :pitch-radius radius
+                         :outer-radius outer-radius
+                         :inner-radius (+ (:pitch-radius args1)
+                                          (:pitch-radius args2)
+                                          (base-radius args2))))
+        sun (external-gear args1)
+        planet (external-gear args2)]
+    (union
+     (-# (extrude-linear
+          {:height height, :angle angle, :radius (:pitch-radius args1)}
+          ring))
+
+     (extrude-herringbone
+      {:height height, :angle angle, :radius (:pitch-radius args1)}
+      sun)
+
+     (map
+      (bound-fn [i]
+        (let [theta (* i (/ tau n))]
+          (revolve (:pitch-radius args1) (:pitch-radius args2) theta
+                   (extrude-herringbone
+                    {:height height, :angle angle :radius (:pitch-radius args2)}
+                    planet))))
+      (range n)))))
 
 ;; sample spur gear
 
@@ -139,5 +166,6 @@
 
 (comment
   (planetary args1 args2
-             :n 7, :height 3, :angle (/ tau 18)))
+             :n 7, :height 3, :angle (/ tau 11118)
+             :outer-radius 25))
 
