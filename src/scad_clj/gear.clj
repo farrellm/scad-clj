@@ -90,7 +90,7 @@
 
 (defn extrude-herringbone [{:keys [height radius angle]} & block]
   (let [height-p (+ (/ height 2.) epsilon)
-        arc-len (/ height-p (Math/tan angle))
+        arc-len (* height-p (Math/tan angle))
         twist (/ arc-len radius)]
     (union
      (apply extrude-linear {:height height-p
@@ -147,5 +147,5 @@
 
 (comment
   (planetary args1 args2
-             :n 7, :height 3, :angle (/ tau 8)))
+             :n 7, :height 3, :angle (/ tau 18)))
 
