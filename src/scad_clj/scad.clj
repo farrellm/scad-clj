@@ -20,7 +20,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; utility
 
-(defn rtod [radians]
+(defn rad->deg [radians]
   (/ (* radians 180) pi))
 
 (defn indent [depth]
@@ -148,13 +148,13 @@
 
 (defmethod write-expr :rotatev [depth [form [a [x y z]] & block]]
   (concat
-   (list (indent depth) "rotate (a=" (/ (* a 180) pi) ", v=[" x ", " y ", " z "]) {\n")
+   (list (indent depth) "rotate (a=" (rad->deg a) ", v=[" x ", " y ", " z "]) {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :rotatec [depth [form [x y z]] & block]
   (concat
-   (list (indent depth) "rotate ([" (rtod x) "," (rtod y) "," (rtod z) "]) {\n")
+   (list (indent depth) "rotate ([" (rad->deg x) "," (rad->deg y) "," (rad->deg z) "]) {\n")
    (write-block depth block)
    (list (indent depth) "}\n")))
 
@@ -222,7 +222,7 @@
                                                     :or {center @center-default}} & block]]
   (concat
    (list (indent depth) "linear_extrude (height=" height)
-   (if (nil? twist) [] (list ", twist=" twist))
+   (if (nil? twist) [] (list ", twist=" (rad->deg twist)))
    (if (nil? convexity) [] (list ", convexity=" convexity))
    (when center ", center=true") "){\n"
 
