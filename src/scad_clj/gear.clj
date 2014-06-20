@@ -152,7 +152,7 @@
                        (external-gear planet-args))]
     (union
      (extrude-herringbone
-      {:height height, :angle angle, :radius (:pitch-radius sun-args)}
+      {:height height, :angle (- angle), :radius (:pitch-radius sun-args)}
       ring)
 
      (extrude-herringbone
@@ -166,7 +166,7 @@
            (revolve (:pitch-radius sun-args) (:pitch-radius planet-args)
                     (mate-planetary sun-args planet-args ring-args theta)
                     (extrude-herringbone
-                     {:height height, :angle angle :radius (:pitch-radius planet-args)}
+                     {:height height, :angle (- angle) :radius (:pitch-radius planet-args)}
                      planet))))
        (range n))))))
 
