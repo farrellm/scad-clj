@@ -20,8 +20,7 @@
 
 (defn involute-curve [i]
   (fn [t]
-    (let [x (* i t)
-          h (Math/sqrt (+ (sq x) (sq i)))]
+    (let [x (* i t)]
       (mmul (rot-z (- t))
             (matrix [x i 0])))))
 
@@ -53,12 +52,13 @@
                                      (samples 0 theta-addendum *n-involute*)))
                            [0 0])))))
 
-(defn tooth [{:keys [pitch-radius radial-pitch pressure-angle addendum] :as args}]
+(defn tooth [{:keys [pitch-radius radial-pitch pressure-angle addendum toothiness]
+              :or {toothiness 0.5} :as args}]
   (let [profile (profile args)
         addendum-radius (+ pitch-radius addendum)]
     (hull
      profile
-     (rotate (/ tau 2 radial-pitch pitch-radius) [0 0 1]
+     (rotate (/ (* toothiness tau) radial-pitch pitch-radius) [0 0 1]
              (mirror [1 0 0]
                      profile)))))
 
@@ -79,7 +79,8 @@
   (rotate (/ (angular-width args) 2.) [0 0 1]
    (difference
     (circle outer-radius)
-    (external-gear args)
+    (external-gear (assoc args
+                     :toothiness (- 1. (:toothiness args))))
     (circle inner-radius))))
 
 (defn angular-width [{:keys [pitch-radius radial-pitch] :as args}]
@@ -117,41 +118,65 @@
                    (apply rotate (/ tau 2.) [0 0 1]
                           block)))))
 
-(defn planetary [args1 args2 & {:keys [n height angle outer-radius]}]
-  (let [radius (+ (:pitch-radius args1)
-                  (* 2 (:pitch-radius args2)))
-        ring (internal-gear (assoc args2
-                         :pitch-radius radius
-                         :outer-radius outer-radius
-                         :inner-radius (+ (:pitch-radius args1)
-                                          (:pitch-radius args2)
-                                          (base-radius args2))))
-        sun (external-gear args1)
-        planet (external-gear args2)]
+(defn- normalize-delta-pos [x]
+  (if (< 0 x)
+    (- x (Math/floor x))
+    (- x (Math/floor x))))
+
+(defn- mate-planetary [sun-args planet-args ring-args theta]
+  (let [width (angular-width ring-args)
+        parity (mod (* (:pitch-radius planet-args)
+                       (:radial-pitch planet-args)) 2)
+        ring-pos (tooth-position ring-args 0 theta)
+        planet-pos (tooth-position ring-args 0
+                                   (- (* width (/ parity 2.)) theta))
+        delta-pos (normalize-delta-pos (- ring-pos planet-pos 0.5))
+        delta-angle (* delta-pos width (/ 3. 4.))]
+    (prn [parity ring-pos planet-pos delta-pos])
+    (+ theta (* 0.9 delta-angle))))
+
+(defn planetary [sun-args planet-args & {:keys [n height angle outer-radius]}]
+  (let [radius (+ (:pitch-radius sun-args)
+                  (* 2 (:pitch-radius planet-args)))
+        ring-args (assoc planet-args
+                    :pitch-radius radius
+                    :outer-radius outer-radius
+                    :inner-radius (+ (:pitch-radius sun-args)
+                                     (:pitch-radius planet-args)
+                                     (base-radius planet-args)
+                                     (* 0.3 (:addendum planet-args)))
+                    :addendum (* 1.3 (:addendum planet-args)))
+        ring (internal-gear ring-args)
+        sun (external-gear sun-args)
+        planet (rotate 0.01 [0 0 1]
+                       (external-gear planet-args))]
     (union
-     (-# (extrude-linear
-          {:height height, :angle angle, :radius (:pitch-radius args1)}
-          ring))
+     (extrude-herringbone
+      {:height height, :angle angle, :radius (:pitch-radius sun-args)}
+      ring)
 
      (extrude-herringbone
-      {:height height, :angle angle, :radius (:pitch-radius args1)}
+      {:height height, :angle angle, :radius (:pitch-radius sun-args)}
       sun)
 
-     (map
-      (bound-fn [i]
-        (let [theta (* i (/ tau n))]
-          (revolve (:pitch-radius args1) (:pitch-radius args2) theta
-                   (extrude-herringbone
-                    {:height height, :angle angle :radius (:pitch-radius args2)}
-                    planet))))
-      (range n)))))
+     (union
+      (map
+       (bound-fn [i]
+         (let [theta (* i (/ tau n))]
+           (revolve (:pitch-radius sun-args) (:pitch-radius planet-args)
+                    (mate-planetary sun-args planet-args ring-args theta)
+                    (extrude-herringbone
+                     {:height height, :angle angle :radius (:pitch-radius planet-args)}
+                     planet))))
+       (range n))))))
 
 ;; sample spur gear
 
 (def args1 {:pitch-radius 10
             :radial-pitch 3.0
             :pressure-angle (* tau (/ 20 360))
-            :addendum 0.3})
+            :addendum 0.3
+            :toothiness 0.45})
 (def args2 (assoc args1
              :pitch-radius 5))
 
@@ -166,6 +191,6 @@
 
 (comment
   (planetary args1 args2
-             :n 7, :height 3, :angle (/ tau 11118)
+             :n 7, :height 3, :angle (/ tau 8)
              :outer-radius 25))
 
