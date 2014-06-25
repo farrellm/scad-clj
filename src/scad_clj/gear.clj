@@ -62,6 +62,9 @@
              (mirror [1 0 0]
                      profile)))))
 
+(defn angular-width [{:keys [pitch-radius radial-pitch] :as args}]
+  (/ tau radial-pitch pitch-radius))
+
 ;; radial-pitch: teath per tau units of circumference
 (defn external-gear [{:keys [pitch-radius radial-pitch pressure-angle
                     tooth-ratio addendum] :as args}]
@@ -82,9 +85,6 @@
     (external-gear (assoc args
                      :toothiness (- 1. (:toothiness args))))
     (circle inner-radius))))
-
-(defn angular-width [{:keys [pitch-radius radial-pitch] :as args}]
-  (/ tau radial-pitch pitch-radius))
 
 (defn tooth-position [{:keys [pitch-radius radial-pitch] :as args} rotation angle]
   (/ (rem (- angle rotation) (angular-width args))
@@ -121,19 +121,22 @@
 (defn- normalize-delta-pos [x]
   (if (< 0 x)
     (- x (Math/floor x))
-    (- x (Math/floor x))))
+    (- x (Math/floor x)))
+  x)
 
 (defn- mate-planetary [sun-args planet-args ring-args theta]
-  (let [width (angular-width ring-args)
-        parity (mod (* (:pitch-radius planet-args)
-                       (:radial-pitch planet-args)) 2)
-        ring-pos (tooth-position ring-args 0 theta)
-        planet-pos (tooth-position ring-args 0
-                                   (- (* width (/ parity 2.)) theta))
-        delta-pos (normalize-delta-pos (- ring-pos planet-pos 0.5))
-        delta-angle (* delta-pos width (/ 3. 4.))]
-    (prn [parity ring-pos planet-pos delta-pos])
-    (+ theta (* 0.9 delta-angle))))
+  (let [width-ring (angular-width ring-args)
+        width-plnt (angular-width planet-args)
+
+        d-pos-d-theta-ring (/ width-ring)
+        d-pos-d-theta-plnt (identity (/ (/ (:pitch-radius sun-args)
+                                    (:pitch-radius planet-args))
+                                 width-plnt))
+        d-pos-d-theta (+ d-pos-d-theta-ring d-pos-d-theta-plnt)
+
+        delta-pos (- 0.5 (rem (* d-pos-d-theta theta) 1))
+        delta-theta (/ delta-pos d-pos-d-theta)]
+    (+ theta delta-theta)))
 
 (defn planetary [sun-args planet-args & {:keys [n height angle outer-radius]}]
   (let [radius (+ (:pitch-radius sun-args)
@@ -152,33 +155,32 @@
                        (external-gear planet-args))]
     (union
      (extrude-herringbone
-      {:height height, :angle (- angle), :radius (:pitch-radius sun-args)}
+      {:height height, :angle (- angle), :radius (:pitch-radius ring-args)}
       ring)
 
      (extrude-herringbone
       {:height height, :angle angle, :radius (:pitch-radius sun-args)}
       sun)
 
-     (union
-      (map
-       (bound-fn [i]
-         (let [theta (* i (/ tau n))]
-           (revolve (:pitch-radius sun-args) (:pitch-radius planet-args)
-                    (mate-planetary sun-args planet-args ring-args theta)
-                    (extrude-herringbone
-                     {:height height, :angle (- angle) :radius (:pitch-radius planet-args)}
-                     planet))))
-       (range n))))))
+     (map
+      (bound-fn [i]
+        (let [theta (* i (/ tau n))]
+          (revolve (:pitch-radius sun-args) (:pitch-radius planet-args)
+                   (mate-planetary sun-args planet-args ring-args theta)
+                   (extrude-herringbone
+                    {:height height, :angle (- angle) :radius (:pitch-radius planet-args)}
+                    planet))))
+      (range n)))))
 
 ;; sample spur gear
 
-(def args1 {:pitch-radius 10
-            :radial-pitch 3.0
+(def args1 {:pitch-radius 28
+            :radial-pitch 1.0
             :pressure-angle (* tau (/ 20 360))
-            :addendum 0.3
+            :addendum 1
             :toothiness 0.45})
 (def args2 (assoc args1
-             :pitch-radius 5))
+             :pitch-radius 18))
 
 (comment
   (extrude-linear {:height 3}
@@ -189,8 +191,6 @@
                                (mate-to args1 0 args2 0 0) [0 0 1]
                                (external-gear args2))))))
 
-(comment
-  (planetary args1 args2
-             :n 7, :height 3, :angle (/ tau 8)
-             :outer-radius 25))
-
+(planetary args1 args2
+           :n 7, :height 10, :angle (/ tau 8)
+           :outer-radius 80)
