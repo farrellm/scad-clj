@@ -4,7 +4,8 @@
             [clojure.core.matrix :refer [matrix mmul]])
   (:import [java.lang.Math]))
 
-(def ^:dynamic *n-involute* 5)
+(def ^:dynamic *n-involute* 8)
+(def ^:dynamic *tolerance* 0.1)
 (def epsilon 1e-9)
 
 (defn sq [x]
@@ -113,7 +114,7 @@
 (defn revolve [radius1 radius2 theta & block]
   (rotate theta [0 0 1]
           (translate
-           [(+ radius1 radius2) 0 0]
+           [(+ radius1 radius2 *tolerance*) 0 0]
            (rotate (/ (* theta radius1) radius2) [0 0 1]
                    (apply rotate (/ tau 2.) [0 0 1]
                           block)))))
@@ -125,7 +126,10 @@
   x)
 
 (defn- mate-planetary [sun-args planet-args ring-args theta]
-  (let [width-ring (angular-width ring-args)
+  (let [parity (mod (* (:radial-pitch planet-args)
+                       (:pitch-radius planet-args)) 2)
+
+        width-ring (angular-width ring-args)
         width-plnt (angular-width planet-args)
 
         d-pos-d-theta-ring (/ width-ring)
@@ -134,7 +138,8 @@
                                  width-plnt))
         d-pos-d-theta (+ d-pos-d-theta-ring d-pos-d-theta-plnt)
 
-        delta-pos (- 0.5 (rem (* d-pos-d-theta theta) 1))
+        delta-pos (- 0.5 (rem (+ (* d-pos-d-theta theta)
+                                 (/ parity 2)) 1))
         delta-theta (/ delta-pos d-pos-d-theta)]
     (+ theta delta-theta)))
 
@@ -147,11 +152,11 @@
                     :inner-radius (+ (:pitch-radius sun-args)
                                      (:pitch-radius planet-args)
                                      (base-radius planet-args)
-                                     (* 0.3 (:addendum planet-args)))
-                    :addendum (* 1.3 (:addendum planet-args)))
+                                     (* 2 *tolerance*))
+                    :addendum (+ (:addendum planet-args) (* 2 *tolerance*)))
         ring (internal-gear ring-args)
         sun (external-gear sun-args)
-        planet (rotate 0.01 [0 0 1]
+        planet (rotate 0.05 [0 0 1]
                        (external-gear planet-args))]
     (union
      (extrude-herringbone
@@ -174,13 +179,17 @@
 
 ;; sample spur gear
 
-(def args1 {:pitch-radius 28
-            :radial-pitch 1.0
-            :pressure-angle (* tau (/ 20 360))
-            :addendum 1
+(def args1 {:pitch-radius 100/7
+            :radial-pitch 0.56
+            :pressure-angle (* tau (/ 45 360))
+            :addendum 2
             :toothiness 0.45})
 (def args2 (assoc args1
-             :pitch-radius 18))
+             :pitch-radius 100/8))
+
+(planetary args1 args1
+           :n 5, :height 20, :angle (/ tau 8)
+           :outer-radius 60)
 
 (comment
   (extrude-linear {:height 3}
@@ -192,5 +201,5 @@
                                (external-gear args2))))))
 
 (planetary args1 args2
-           :n 7, :height 10, :angle (/ tau 8)
-           :outer-radius 80)
+           :n 5, :height 20, :angle (/ tau 8)
+           :outer-radius 48)
