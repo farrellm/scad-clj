@@ -1,4 +1,4 @@
-(defproject scad-clj "0.3.0-SNAPSHOT"
+(defproject scad-clj "0.3.0"
   :description "OpenSCAD DSL in Clojure"
   :url "https://github.com/farrellm/scad-clj"
   :license {:name "Eclipse Public License"
