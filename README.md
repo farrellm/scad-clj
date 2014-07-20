@@ -10,12 +10,12 @@ Functions generally mirror [OpenSCAD](http://en.wikibooks.org/wiki/OpenSCAD_User
 Releases and dependency information
 ----
 
-Latest release: 0.2.1
+Latest release: 0.3.0
 
 [Leiningen](http://github.com/technomancy/leiningen/) dependency information:
 
 ```
-[scad-clj "0.2.1"]
+[scad-clj "0.3.0"]
 ```
 
 [Maven](http://maven.apache.org) dependency information:
@@ -24,7 +24,7 @@ Latest release: 0.2.1
 <dependency>
   <groupId>scad-clj</groupId>
   <artifactId>scad-clj</artifactId>
-  <version>0.2.1</version>
+  <version>0.3.0</version>
 </dependency>
 ```
 
