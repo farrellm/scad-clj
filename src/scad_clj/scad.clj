@@ -237,9 +237,9 @@
    (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 
-(defmethod write-expr :render [depth [form & block]]
+(defmethod write-expr :render [depth [form {:keys [convexity]} & block]]
   (concat
-   (list (indent depth) "render () {\n")
+   (list (indent depth) (str "render (convexity=" convexity ") {\n"))
    (mapcat #(write-expr (+ depth 1) %1) block)
    (list (indent depth) "}\n")))
 

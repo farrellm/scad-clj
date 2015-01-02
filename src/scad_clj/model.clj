@@ -183,8 +183,12 @@
 (defn cut [& block]
   `(:projection {:cut true} ~@block))
 
-(defn render [ & block]
-  `(:render ~@block))
+(defn render [& block]
+  (if (and (not (empty? block))
+           (number? (first block)))
+    (let [[c & bl] block]
+      `(:render {:convexity ~c} ~@bl))
+    `(:render {:convexity 1} ~@block)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; text
