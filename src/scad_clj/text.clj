@@ -19,7 +19,8 @@
    PathIterator/SEG_QUADTO 2})
 
 (defn- path-iterator->segments
-  "Converts a PathIterator into a sequence of segments of the form [segment-type [& points]]"
+  "Converts a PathIterator into a sequence of segments of the
+  form [segment-type [& points]]"
   [^PathIterator path-iterator]
   (if (not (.isDone path-iterator))
     (let [coords (double-array (* 2 (apply max (vals segment-length))))
@@ -29,8 +30,8 @@
             (lazy-seq (path-iterator->segments (doto path-iterator (.next))))))))
 
 (defn- quad->fn
-  "Returns the parametric control equation f(t), 0 <= t <= 1
-for the quadratic interpolation of 3 points."
+  "Returns the parametric control equation f(t), 0 <= t <= 1 for the
+  quadratic interpolation of 3 points."
   [cp p1 p2]
   (fn [t]
     (letfn [(interp [a b c] (+ (* (Math/pow (- 1 t) 2) a)
@@ -40,21 +41,21 @@ for the quadratic interpolation of 3 points."
        (apply interp (map second [cp p1 p2]))])))
 
 (defn- cubic->fn
-  "Returns the parametric control equation f(t), 0 <= t <= 1
-for the cubic interpolation of 4 points."  
-  [cp p1 p2 p3]  
+  "Returns the parametric control equation f(t), 0 <= t <= 1 for the
+  cubic interpolation of 4 points."
+  [cp p1 p2 p3]
   (fn [t]
     (letfn [(interp [a b c d]
               (+ (* (Math/pow (- 1 t) 3) a)
                  (* 3 t (Math/pow (- 1 t) 2) b)
-                 (* 3 (Math/pow t 2) (- 1 t) c)                                
+                 (* 3 (Math/pow t 2) (- 1 t) c)
                  (* (Math/pow t 3) d)))]
       [(apply interp (map first [cp p1 p2 p3]))
        (apply interp (map second [cp p1 p2 p3]))])))
 
 (defn- segments->lines
   "Takes a sequence of segments of the form [segment-type [& points]]
-and transforms each segment into a sequence of interpolated points"
+  and transforms each segment into a sequence of interpolated points"
   [segments]
   (reductions (fn [prev-line-points [segment-type control-points]]
                 #_(println segment-type)
@@ -64,7 +65,7 @@ and transforms each segment into a sequence of interpolated points"
                   :quad-to (map (apply quad->fn
                                        (last prev-line-points)
                                        control-points)
-                                (range 1/10 11/10 1/10))                    
+                                (range 1/10 11/10 1/10))
                   :cubic-to (map (apply cubic->fn
                                         (last prev-line-points)
                                         control-points)
