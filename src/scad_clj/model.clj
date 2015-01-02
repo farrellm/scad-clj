@@ -1,6 +1,7 @@
 (ns scad-clj.model
   (:refer-clojure :exclude [import use])
-  (:require [clojure.core.match :refer [match]]
+  (:require [clojure.walk :refer [postwalk]]
+            [clojure.core.match :refer [match]]
             [scad-clj.text :refer [text-parts]]
             ))
 
@@ -20,19 +21,21 @@
   `(:fs ~x))
 
 (def ^:dynamic *fa* false)
-(defmacro with-fa [x & block]
-  `(binding [*fa* ~x]
-     (list ~@block)))
-
 (def ^:dynamic *fn* false)
-(defmacro with-fn [x & block]
-  `(binding [*fn* ~x]
-     (list ~@block)))
-
 (def ^:dynamic *fs* false)
+
+(defn with-f* [f x block]
+  `(binding [~f ~x]
+     (postwalk identity (list ~@block))))
+
+(defmacro with-fa [x & block]
+  (with-f* '*fa* x block))
+
+(defmacro with-fn [x & block]
+  (with-f* '*fn* x block))
+
 (defmacro with-fs [x & block]
-  `(binding [*fs* ~x]
-     (list ~@block)))
+  (with-f* '*fs* x block))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Modifier
