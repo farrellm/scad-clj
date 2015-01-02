@@ -23,6 +23,7 @@
 (def ^:dynamic *fa* false)
 (def ^:dynamic *fn* false)
 (def ^:dynamic *fs* false)
+(def ^:dynamic *center* true)
 
 (defn with-f* [f x block]
   `(binding [~f ~x]
@@ -36,6 +37,9 @@
 
 (defmacro with-fs [x & block]
   (with-f* '*fs* x block))
+
+(defmacro with-center [x & block]
+  (with-f* '*center* x block))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Modifier
@@ -72,8 +76,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 
-(defn square [x y & {:keys [center]}]
-  `(:square ~(merge {:x x :y y} (if center {:center center}))))
+(defn square [x y & {:keys [center] :or {center *center*}}]
+  `(:square ~{:x x, :y y, :center center}))
 
 (defn circle [r]
   `(:circle {:r ~r}))
@@ -82,31 +86,28 @@
   ([points]
      `(:polygon {:points ~points}))
   ([points paths & {:keys [convexity]}]
-     `(:polygon {:points ~points :paths ~paths :convexity ~convexity})))
+     `(:polygon {:points ~points, :paths ~paths, :convexity ~convexity})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3D
 
-(defn sphere [r & {:keys [center]}]
+(defn sphere [r]
   (let [args (merge {:r r}
-                    (if center [:center center])
-                    (if *fa* {:fa *fa*} {})
-                    (if *fn* {:fn *fn*} {})
-                    (if *fs* {:fs *fs*} {}))]
+                    (if *fa* {:fa *fa*})
+                    (if *fn* {:fn *fn*})
+                    (if *fs* {:fs *fs*}))]
     `(:sphere ~args)))
 
-(defn cube [x y z & {:keys [center]}]
-  `(:cube ~(merge {:x x :y y :z z}
-                 (if center {:center center}))))
+(defn cube [x y z & {:keys [center] :or {center *center*}}]
+  `(:cube ~{:x x, :y y, :z z, :center center}))
 
-(defn cylinder [rs h & {:keys [center]}]
-  (let [fargs (merge (if center {:center center} {})
-                     (if *fa* {:fa *fa*} {})
-                     (if *fn* {:fn *fn*} {})
-                     (if *fs* {:fs *fs*} {}))]
+(defn cylinder [rs h & {:keys [center] :or {center *center*}}]
+  (let [fargs (merge (if *fa* {:fa *fa*})
+                     (if *fn* {:fn *fn*})
+                     (if *fs* {:fs *fs*}))]
     (match [rs]
-      [[r1 r2]] `(:cylinder ~(merge fargs {:h h :r1 r1 :r2 r2}))
-      [r] `(:cylinder ~(merge fargs {:h h :r r})))))
+      [[r1 r2]] `(:cylinder ~(merge fargs {:h h, :r1 r1, :r2 r2, :center center}))
+      [r]       `(:cylinder ~(merge fargs {:h h, :r r, :center center})))))
 
 (defn polyhedron
   ([points faces]
@@ -117,7 +118,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transformations
 
-(defn resize[[x y z] & block]
+(defn resize [[x y z] & block]
   (let [is-auto (and (keyword? (first block))
                      (= :auto (first block)))
         auto (if is-auto (second block))
@@ -169,7 +170,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; other
 
-(defn extrude-linear [{:keys [height twist convexity center]} & block]
+(defn extrude-linear [{:keys [height twist convexity center] :or {center *center*}} & block]
   `(:extrude-linear {:height ~height :twist ~twist :convexity ~convexity :center ~center} ~@block))
 
 (defn extrude-rotate
