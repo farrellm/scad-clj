@@ -1,6 +1,6 @@
 (ns scad-clj.core-test
-  (:use clojure.test
-        [scad-clj model text scad]))
+  (:require [clojure.test :refer :all]
+            [scad-clj model text scad]))
 
 (deftest a-test
   (testing "Success"
