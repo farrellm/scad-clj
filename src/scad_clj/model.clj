@@ -184,7 +184,7 @@
   `(:projection {:cut true} ~@block))
 
 (defn render [& block]
-  (if (and (not (empty? block))
+  (if (and (seq block)
            (number? (first block)))
     (let [[c & bl] block]
       `(:render {:convexity ~c} ~@bl))
@@ -210,7 +210,7 @@
 
 (defn extrude-curve [{:keys [height radius angle n]} block]
   (let [lim (Math/floor (/ n 2))
-        phi (/ (/ angle (- n 1)) 2)]
+        phi (/ (/ angle (dec n)) 2)]
     (apply union
            (map (fn [x]
                   (let [theta (* 0.5 angle (/ x lim) )
@@ -229,4 +229,4 @@
                                  1000 (* 2 height)))
                          (extrude-linear {:height height}
                            block))))))
-                (range (- lim) (+ lim 1))))))
+                (range (- lim) (inc lim))))))

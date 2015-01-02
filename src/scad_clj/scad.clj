@@ -24,10 +24,10 @@
   (/ (* radians 180) pi))
 
 (defn indent [depth]
-  (apply str (repeat depth "  ")))
+  (join (repeat depth "  ")))
 
 (defn write-block [depth block]
-  (mapcat #(write-expr (+ depth 1) %1) block))
+  (mapcat #(write-expr (inc depth) %1) block))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Default centering control
@@ -131,19 +131,19 @@
 (defmethod write-expr :resize [depth [form {:keys [x y z auto]} & block]]
   (concat
    (list (indent depth) "resize ([" x ", " y ", " z "]")
-   (list (when (not (nil? auto))
+   (list (when-not (nil? auto)
            (str " auto="
                 (if (coll? auto)
-                  (str "[" (join ", " (map #(true? %) auto)) "]")
+                  (str "[" (join ", " (map true? auto)) "]")
                   (true? auto)))))
    "){\n"
-   (mapcat #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :translate [depth [form [x y z] & block]]
   (concat
    (list (indent depth) "translate ([" x ", " y ", " z "]) {\n")
-   (mapcat #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :rotatev [depth [form [a [x y z]] & block]]
@@ -179,13 +179,13 @@
 (defmethod write-expr :hull [depth [form & block]]
   (concat
    (list (indent depth) "hull () {\n")
-   (mapcat #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :minkowski [depth [form & block]]
   (concat
    (list (indent depth) "minkowski () {\n")
-   (mapcat #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -200,13 +200,13 @@
 (defmethod write-expr :difference [depth [form & block]]
   (concat
    (list (indent depth) "difference () {\n")
-   (mapcat #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :intersection [depth [form & block]]
   (concat
    (list (indent depth) "intersection () {\n")
-   (mapcat #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -215,7 +215,7 @@
 (defmethod write-expr :projection [depth [form {:keys [cut]} & block]]
   (concat
    (list (indent depth) "projection (cut = " cut ") {\n")
-   (mapcat #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :extrude-linear [depth [form {:keys [height twist convexity center]
@@ -226,7 +226,7 @@
    (if (nil? convexity) [] (list ", convexity=" convexity))
    (when center ", center=true") "){\n"
 
-   (mapcat #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :extrude-rotate [depth [form {:keys [convexity]} & block]]
@@ -234,13 +234,13 @@
    (list (indent depth) "rotate_extrude (")
    (if (nil? convexity) [] (list "convexity=" convexity))
    (list ") {\n")
-   (mapcat #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
 (defmethod write-expr :render [depth [form {:keys [convexity]} & block]]
   (concat
    (list (indent depth) (str "render (convexity=" convexity ") {\n"))
-   (mapcat #(write-expr (+ depth 1) %1) block)
+   (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -259,4 +259,4 @@
 ;; output
 
 (defn write-scad [& block]
-  (apply str (write-expr 0 block)))
+  (join (write-expr 0 block)))

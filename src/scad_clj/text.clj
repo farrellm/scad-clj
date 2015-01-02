@@ -97,8 +97,7 @@
   (let [frc (FontRenderContext. nil
                                 RenderingHints/VALUE_TEXT_ANTIALIAS_DEFAULT
                                 RenderingHints/VALUE_FRACTIONALMETRICS_DEFAULT)
-        glyph-vector (-> (Font. font Font/PLAIN size)
-                         (.createGlyphVector frc text))
+        glyph-vector (.createGlyphVector (Font. font Font/PLAIN size) frc text)
         path-iters (map #(-> glyph-vector
                              (.getGlyphOutline %)
                              (.getPathIterator nil))
