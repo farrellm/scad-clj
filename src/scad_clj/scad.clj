@@ -1,8 +1,6 @@
 (ns scad-clj.scad
-  ;; (:refer-clojure :exclude [import use])
   (:require [clojure.string :refer [join]]
-            [scad-clj.model :refer [pi]]
-            ))
+            [scad-clj.model :refer [pi]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; multimethod
@@ -58,16 +56,16 @@
   (join ", " (map (fn [[k v]] (str (name k) "=" (make-arguments [v])) ) m)))
 
 (defmethod write-expr :include [depth [form {:keys [library]}]]
-  (list (indent depth) "include <" library">\n"  ))
+  (list (indent depth) "include <" library">\n"))
 
 (defmethod write-expr :use [depth [form {:keys [library]}]]
-  (list (indent depth) "use <" library">\n"  ))
+  (list (indent depth) "use <" library">\n"))
 
 (defmethod write-expr :import [depth [form file]]
-  (list (indent depth) "import (\"" file "\");\n"  ))
+  (list (indent depth) "import (\"" file "\");\n"))
 
 (defmethod write-expr :call [depth [form {:keys [function]} & args]]
-  (list (indent depth) function  "(" (make-arguments (apply vec args)) ");\n"  ))
+  (list (indent depth) function "(" (make-arguments (apply vec args)) ");\n"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
@@ -82,8 +80,8 @@
 (defmethod write-expr :polygon [depth [form {:keys [points paths convexity]}]]
   `(~@(indent depth) "polygon ("
     "points=[[" ~(join "], [" (map #(join ", " %1) points)) "]]"
-    ~@(if (nil? paths) [] `(", paths=[["  ~(join "], [" (map #(join "," %1) paths))  "]]"))
-    ~@(if (nil? convexity) [] [", convexity=" convexity])
+    ~@(when paths [", paths=[[" (join "], [" (map #(join "," %1) paths)) "]]"])
+    ~@(when convexity [", convexity=" convexity])
     ");\n"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -93,8 +91,7 @@
   (let [fargs (str (and fa (str "$fa=" fa ", "))
                    (and fn (str "$fn=" fn ", "))
                    (and fs (str "$fs=" fs ", ")))]
-    (list (indent depth) "sphere (" fargs "r=" r
-          (when center ", center=true") ");\n")))
+    (list (indent depth) "sphere (" fargs "r=" r ");\n")))
 
 (defmethod write-expr :cube [depth [form {:keys [x y z center]}]]
   (list (indent depth) "cube ([" x ", " y ", " z "]"
@@ -106,9 +103,9 @@
                    (and fs (str "$fs=" fs ", ")))]
     (concat
      (list (indent depth) "cylinder (" fargs "h=" h)
-     (if (nil? r) (list ", r1=" r1 ", r2=" r2) (list ", r=" r))
-     (when center ", center=true")
-     ");\n")))
+     (if r (list ", r=" r) (list ", r1=" r1 ", r2=" r2))
+     (when center (list ", center=true"))
+     (list ");\n"))))
 
 (defmethod write-expr :polyhedron [depth [form {:keys [points faces convexity]}]]
   `(~@(indent depth) "polyhedron ("
@@ -215,7 +212,8 @@
    (list (indent depth) "linear_extrude (height=" height)
    (if (nil? twist) [] (list ", twist=" (rad->deg twist)))
    (if (nil? convexity) [] (list ", convexity=" convexity))
-   (when center ", center=true") "){\n"
+   (when center (list ", center=true"))
+   (list "){\n")
 
    (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
