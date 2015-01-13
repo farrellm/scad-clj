@@ -39,10 +39,10 @@
 (defn profile [{:keys [pitch-radius pressure-angle addendum] :as args}]
   (let [addendum-radius (+ pitch-radius addendum)
         base-radius (base-radius args)
-        
+
         theta-addendum (Math/sqrt (- (sq (/ addendum-radius base-radius)) 1))
         theta-pitch (Math/sqrt (- (sq (/ pitch-radius base-radius)) 1))
-        
+
         curve (involute-curve base-radius)
         [p-x _ _] (curve theta-pitch)
 
@@ -104,12 +104,13 @@
         arc-len (* height-p (Math/tan angle))
         twist (/ arc-len radius)]
     (union
-     (apply extrude-linear {:height height-p
-                            :twist twist} block)
-     (translate [0 0 height]
-                (mirror [0 0 1]
-                        (apply extrude-linear {:height height-p
-                                               :twist twist} block))))))
+     (translate [0 0 (- (/ epsilon 2) (/ height 4))]
+       (apply extrude-linear {:height height-p
+                              :twist twist} block))
+     (mirror [0 0 1]
+       (translate [0 0 (- (/ epsilon 2) (/ height 4))]
+         (apply extrude-linear {:height height-p
+                                :twist twist} block))))))
 
 (defn revolve [radius1 radius2 theta & block]
   (rotate theta [0 0 1]
@@ -176,30 +177,3 @@
                     {:height height, :angle (- angle) :radius (:pitch-radius planet-args)}
                     planet))))
       (range n)))))
-
-;; sample spur gear
-
-(def args1 {:pitch-radius 100/7
-            :radial-pitch 0.56
-            :pressure-angle (* tau (/ 45 360))
-            :addendum 2
-            :toothiness 0.45})
-(def args2 (assoc args1
-             :pitch-radius 100/8))
-
-(planetary args1 args1
-           :n 5, :height 20, :angle (/ tau 8)
-           :outer-radius 60)
-
-(comment
-  (extrude-linear {:height 3}
-                  (union
-                   (external-gear args1)
-                   (translate [15 0 0]
-                              (rotate
-                               (mate-to args1 0 args2 0 0) [0 0 1]
-                               (external-gear args2))))))
-
-(planetary args1 args2
-           :n 5, :height 20, :angle (/ tau 8)
-           :outer-radius 48)
