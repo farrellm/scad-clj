@@ -10,22 +10,8 @@ Functions generally mirror [OpenSCAD](http://en.wikibooks.org/wiki/OpenSCAD_User
 Releases and dependency information
 ----
 
-Latest release: 0.3.0
-
 [Leiningen](http://github.com/technomancy/leiningen/) dependency information:
 
-```
-[scad-clj "0.3.0"]
-```
-
-[Maven](http://maven.apache.org) dependency information:
-
-```
-<dependency>
-  <groupId>scad-clj</groupId>
-  <artifactId>scad-clj</artifactId>
-  <version>0.3.0</version>
-</dependency>
-```
+[![Clojars Project](http://clojars.org/scad-clj/latest-version.svg)](http://clojars.org/scad-clj)
 
 [![Build Status](https://travis-ci.org/farrellm/scad-clj.svg?branch=master)](https://travis-ci.org/farrellm/scad-clj)
