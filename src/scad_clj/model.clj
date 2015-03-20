@@ -8,6 +8,12 @@
 (def pi Math/PI)
 (def tau (* 2 pi))
 
+(defn rad->deg [radians]
+  (/ (* radians 180) pi))
+
+(defn deg->rad [degrees]
+  (* (/ degrees 180) pi))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; special variables
 

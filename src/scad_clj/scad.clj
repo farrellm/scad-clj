@@ -1,6 +1,6 @@
 (ns scad-clj.scad
   (:require [clojure.string :refer [join]]
-            [scad-clj.model :refer [pi]]))
+            [scad-clj.model :refer [rad->deg]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; multimethod
@@ -17,9 +17,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; utility
-
-(defn rad->deg [radians]
-  (/ (* radians 180) pi))
 
 (defn indent [depth]
   (join (repeat depth "  ")))
