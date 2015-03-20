@@ -171,6 +171,12 @@
    (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
+(defmethod write-expr :offset [depth [form {:keys [r]} & block]]
+  (concat
+   (list (indent depth) "offset (r = " r ") {\n")
+   (mapcat #(write-expr (inc depth) %1) block)
+   (list (indent depth) "}\n")))
+
 (defmethod write-expr :minkowski [depth [form & block]]
   (concat
    (list (indent depth) "minkowski () {\n")

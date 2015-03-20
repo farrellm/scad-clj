@@ -162,6 +162,9 @@
 (defn hull [ & block]
   `(:hull  ~@block))
 
+(defn offset [r block]
+  `(:offset {:r r} ~@block))
+
 (defn minkowski [ & block]
   `(:minkowski ~@block))
 
