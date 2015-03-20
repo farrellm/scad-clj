@@ -6,7 +6,11 @@ pom.xml
 *.jar
 *.class
 .lein-deps-sum
+.lein-env
 .lein-failures
 .lein-plugins
+.lein-repl-history
+.nrepl-port
 \#*\#
 .\#*
+*~
