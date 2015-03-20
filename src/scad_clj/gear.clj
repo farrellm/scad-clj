@@ -11,9 +11,6 @@
 (defn sq [x]
   (* x x))
 
-;; (defn rad->deg [a]
-;;   (* 360 (/ a tau)))
-
 (defn rot-z [t]
   (matrix [[(Math/cos t)     (Math/sin t) 0.]
            [(- (Math/sin t)) (Math/cos t) 0.]
@@ -115,10 +112,10 @@
 (defn revolve [radius1 radius2 theta & block]
   (rotate theta [0 0 1]
           (translate
-           [(+ radius1 radius2 *tolerance*) 0 0]
-           (rotate (/ (* theta radius1) radius2) [0 0 1]
-                   (apply rotate (/ tau 2.) [0 0 1]
-                          block)))))
+            [(+ radius1 radius2) 0 0]
+            (rotate (/ (* theta radius1) radius2) [0 0 1]
+              (apply rotate (/ tau 2.) [0 0 1]
+                     block)))))
 
 (defn- normalize-delta-pos [x]
   (if (< 0 x)
@@ -152,21 +149,19 @@
                     :outer-radius outer-radius
                     :inner-radius (+ (:pitch-radius sun-args)
                                      (:pitch-radius planet-args)
-                                     (base-radius planet-args)
-                                     (* 2 *tolerance*))
-                    :addendum (+ (:addendum planet-args) (* 2 *tolerance*)))
+                                     (base-radius planet-args))
+                    :addendum (+ (:addendum planet-args)))
         ring (internal-gear ring-args)
         sun (external-gear sun-args)
-        planet (rotate 0.05 [0 0 1]
-                       (external-gear planet-args))]
+        planet (external-gear planet-args)]
     (union
      (extrude-herringbone
       {:height height, :angle (- angle), :radius (:pitch-radius ring-args)}
-      ring)
+      (offset (- (/ *tolerance* 2)) ring))
 
      (extrude-herringbone
       {:height height, :angle angle, :radius (:pitch-radius sun-args)}
-      sun)
+      (offset (- (/ *tolerance* 2)) sun))
 
      (map
       (bound-fn [i]
@@ -175,5 +170,5 @@
                    (mate-planetary sun-args planet-args ring-args theta)
                    (extrude-herringbone
                     {:height height, :angle (- angle) :radius (:pitch-radius planet-args)}
-                    planet))))
+                    (offset (- (/ *tolerance* 2)) planet)))))
       (range n)))))
