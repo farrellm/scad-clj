@@ -70,8 +70,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 
-(defmethod write-expr :circle [depth [form {:keys [r]}]]
-  (list (indent depth) "circle (r = " r ");\n"))
+(defmethod write-expr :circle [depth [form {:keys [r fa fn fs center]}]]
+  (let [fargs (str (and fa (str "$fa=" fa ", "))
+                   (and fn (str "$fn=" fn ", "))
+                   (and fs (str "$fs=" fs ", ")))]
+    (list (indent depth) "circle (" fargs "r=" r ");\n")))
 
 (defmethod write-expr :square [depth [form {:keys [x y center]}]]
   (list (indent depth) "square ([" x ", " y "]"

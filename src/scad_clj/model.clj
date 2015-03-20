@@ -80,7 +80,11 @@
   `(:square ~{:x x, :y y, :center center}))
 
 (defn circle [r]
-  `(:circle {:r ~r}))
+  (let [args (merge {:r r}
+                    (if *fa* {:fa *fa*})
+                    (if *fn* {:fn *fn*})
+                    (if *fs* {:fs *fs*}))]
+    `(:circle ~args)))
 
 (defn polygon
   ([points]
