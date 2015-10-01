@@ -36,16 +36,16 @@
      (postwalk identity (list ~@block))))
 
 (defmacro with-fa [x & block]
-  (with-f* '*fa* x block))
+  (with-f* 'scad-clj.model/*fa* x block))
 
 (defmacro with-fn [x & block]
-  (with-f* '*fn* x block))
+  (with-f* 'scad-clj.model/*fn* x block))
 
 (defmacro with-fs [x & block]
-  (with-f* '*fs* x block))
+  (with-f* 'scad-clj.model/*fs* x block))
 
 (defmacro with-center [x & block]
-  (with-f* '*center* x block))
+  (with-f* 'scad-clj.model/*center* x block))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Modifier
