@@ -210,7 +210,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; text
 
-(defn text [font size text]
+(defn text [text & {:as args}]
+  (let [args (merge {:text text} args)]
+    `(:text ~args)))
+
+(defn polygon-text [font size text]
   (let [even-odd-paths (text-parts font size text)]
     (:shape
      (reduce (fn [{:keys [union? shape]} paths]

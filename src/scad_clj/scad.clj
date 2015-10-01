@@ -84,6 +84,17 @@
     ~@(when convexity [", convexity=" convexity])
     ");\n"))
 
+(defmethod write-expr :text [depth [form {:keys [text size font halign valign spacing direction language script]}]]
+  (list (indent depth) "text (\"" text "\""
+        (when size (str ", size=" size))
+        (when font (str ", font=\"" font "\""))
+        (when halign (str ", halign=\"" halign "\""))
+        (when valign (str ", valign=\"" valign "\""))
+        (when spacing (str ", spacing=" spacing))
+        (when direction (str ", direction=\"" direction "\""))
+        (when language (str ", language=\"" language "\""))
+        (when script (str ", script=\"" script "\""))");\n"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3D
 
