@@ -152,7 +152,7 @@
    (write-block depth block)
    (list (indent depth) "}\n")))
 
-(defmethod write-expr :rotatec [depth [form [x y z]] & block]
+(defmethod write-expr :rotatec [depth [form [x y z] & block]]
   (concat
    (list (indent depth) "rotate ([" (rad->deg x) "," (rad->deg y) "," (rad->deg z) "]) {\n")
    (write-block depth block)
