@@ -224,11 +224,12 @@
    (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
-(defmethod write-expr :extrude-linear [depth [form {:keys [height twist convexity center]} & block]]
+(defmethod write-expr :extrude-linear [depth [form {:keys [height twist convexity center scale]} & block]]
   (concat
    (list (indent depth) "linear_extrude (height=" height)
    (if (nil? twist) [] (list ", twist=" (rad->deg twist)))
    (if (nil? convexity) [] (list ", convexity=" convexity))
+   (if (nil? scale) [] (list ", scale=" scale))
    (when center (list ", center=true"))
    (list "){\n")
 
