@@ -183,8 +183,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; other
 
-(defn extrude-linear [{:keys [height twist convexity center] :or {center *center*}} & block]
-  `(:extrude-linear {:height ~height :twist ~twist :convexity ~convexity :center ~center} ~@block))
+(defn extrude-linear [{:keys [height twist convexity center scale] :or {center *center*}} & block]
+  `(:extrude-linear {:height ~height :twist ~twist :convexity ~convexity :center ~center :scale ~scale} ~@block))
 
 (defn extrude-rotate
   ([ block ]
