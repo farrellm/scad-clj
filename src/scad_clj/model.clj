@@ -187,9 +187,13 @@
   `(:extrude-linear {:height ~height :twist ~twist :convexity ~convexity :center ~center} ~@block))
 
 (defn extrude-rotate
-  ([ block ] `(:extrude-rotate {} ~block))
-  ([{:keys [convexity]} block] `(:extrude-rotate {:convexity ~convexity} ~block))
-  )
+  ([ block ]
+   (let [args (if *fn* {:fn *fn*} {})]
+     `(:extrude-rotate ~args ~block)))
+  ([{:keys [convexity]} block]
+   (let [args (merge {:convexity ~convexity}
+                     (if *fn* {:fn *fn*} {}))]
+     `(:extrude-rotate ~args ~block))))
 
 (defn projection [cut & block]
   `(:projection {:cut cut} ~@block))
