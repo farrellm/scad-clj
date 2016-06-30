@@ -211,6 +211,10 @@
       `(:render {:convexity ~c} ~@bl))
     `(:render {:convexity 1} ~@block)))
 
+(defn excise "like difference, but subtraction is from the last node, not the first"
+  [& nodes]
+  (difference (last nodes) (drop-last nodes)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; text
 
