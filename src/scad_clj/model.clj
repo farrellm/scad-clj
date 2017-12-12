@@ -190,8 +190,8 @@
   ([ block ]
    (let [args (if *fn* {:fn *fn*} {})]
      `(:extrude-rotate ~args ~block)))
-  ([{:keys [convexity]} block]
-   (let [args (merge {:convexity ~convexity}
+  ([{:keys [convexity angle]} block]
+   (let [args (merge {:convexity convexity :angle angle}
                      (if *fn* {:fn *fn*} {}))]
      `(:extrude-rotate ~args ~block))))
 

@@ -236,11 +236,14 @@
    (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
-(defmethod write-expr :extrude-rotate [depth [form {:keys [convexity fn]} & block]]
+(defmethod write-expr :extrude-rotate [depth [form {:keys [convexity fn angle]} & block]]
   (concat
    (list (indent depth) "rotate_extrude (")
-   (if convexity (list "convexity=" convexity))
-   (if fn (list "$fn=" fn))
+   (join ", "
+     (concat
+       (if convexity [(str "convexity=" convexity)])
+       (if angle [(str "angle=" angle )])
+       (if fn [(str "$fn=" fn)])))
    (list ") {\n")
    (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
