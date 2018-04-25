@@ -64,6 +64,19 @@
 (defmethod write-expr :call [depth [form {:keys [function]} & args]]
   (list (indent depth) function "(" (make-arguments (apply vec args)) ");\n"))
 
+(defmethod write-expr :call-module-with-block [depth [form {:keys [module]} & args]]
+  (let [
+        the-args (butlast (first args))
+        block (list (last (first args)))]
+    (concat
+     (list (indent depth) module " (" (make-arguments (vec the-args)) ") {\n")
+     (write-block depth block)
+     (list (indent depth) "}\n"))))
+
+(defmethod write-expr :call-module-no-block [depth [form {:keys [module]} & args]]
+  (let [the-args (first args)]
+    (list (indent depth) module " (" (make-arguments (vec the-args)) ");\n")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 

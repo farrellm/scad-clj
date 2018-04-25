@@ -79,6 +79,10 @@
 (defn call [function & args]
   `(:call {:function ~(name function)} ~args))
 
+(defn call-module [module & args]
+  `(:call-module-no-block {:module ~(name module)} ~args))
+(defn call-module-with-block [module & args]
+  `(:call-module-with-block {:module ~(name module)} ~args))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 
