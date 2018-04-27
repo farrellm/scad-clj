@@ -83,6 +83,9 @@
   `(:call-module-no-block {:module ~(name module)} ~args))
 (defn call-module-with-block [module & args]
   `(:call-module-with-block {:module ~(name module)} ~args))
+(defn define-module [module & body]
+  `(:define-module {:module ~(name module)} ~body))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 

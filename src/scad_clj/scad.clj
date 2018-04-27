@@ -77,6 +77,15 @@
   (let [the-args (first args)]
     (list (indent depth) module " (" (make-arguments (vec the-args)) ");\n")))
 
+(defmethod write-expr :define-module [depth [form {:keys [module]} & args]]
+  (let [the-args (butlast (first args))
+        block (list (last (first args)))]
+    (concat
+     (list (indent depth) "module " module "(" (make-arguments (vec the-args)) ") {\n")
+     (write-block depth block)
+     (list (indent depth) "};\n"))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2D
 
