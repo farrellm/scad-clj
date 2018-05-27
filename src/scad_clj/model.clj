@@ -195,6 +195,9 @@
                      (if *fn* {:fn *fn*} {}))]
      `(:extrude-rotate ~args ~block))))
 
+(defn surface [filepath & {:keys [convexity center] :or {center *center*}}]
+  `(:surface ~{:filepath filepath :convexity convexity :center center}))
+
 (defn projection [cut & block]
   `(:projection {:cut cut} ~@block))
 
