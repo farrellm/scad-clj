@@ -218,6 +218,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; other
 
+(defmethod write-expr :surface [depth [form {:keys [filepath convexity center]}]]
+  (concat
+   (list (indent depth) "surface (file = \"" filepath "\""
+         (when convexity (format ", convexity=%d" convexity))
+         (when center ", center=true") ");\n")))
+
 (defmethod write-expr :projection [depth [form {:keys [cut]} & block]]
   (concat
    (list (indent depth) "projection (cut = " cut ") {\n")
