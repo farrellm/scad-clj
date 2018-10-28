@@ -20,7 +20,7 @@
 
 (defn- path-iterator->segments
   "Converts a PathIterator into a sequence of segments of the
-  form [segment-type [& points]]"
+  form [segment-type [& points]]."
   [^PathIterator path-iterator]
   (if (not (.isDone path-iterator))
     (let [coords (double-array (* 2 (apply max (vals segment-length))))
@@ -55,7 +55,7 @@
 
 (defn- segments->lines
   "Takes a sequence of segments of the form [segment-type [& points]]
-  and transforms each segment into a sequence of interpolated points"
+  and transforms each segment into a sequence of interpolated points."
   [segments]
   (reductions (fn [prev-line-points [segment-type control-points]]
                 #_(println segment-type)
@@ -102,14 +102,15 @@
                              (.getGlyphOutline %)
                              (.getPathIterator nil))
                         (range (.getNumGlyphs glyph-vector)))
-        intersection-count-maps (map (fn [path-iter] (->> (path-iterator->segments path-iter)
-                                        (partition-by #(= (first %) :close))
-                                        (take-nth 2)
-                                        (map segments->lines)
-                                        (map flatten)
-                                        (map (partial partition 2))
-                                        split-even-odd-intersecting))
-                   path-iters)]
+        intersection-count-maps
+          (map (fn [path-iter] (->> (path-iterator->segments path-iter)
+                                    (partition-by #(= (first %) :close))
+                                    (take-nth 2)
+                                    (map segments->lines)
+                                    (map flatten)
+                                    (map (partial partition 2))
+                                    split-even-odd-intersecting))
+               path-iters)]
     (->> (apply merge-with concat intersection-count-maps)
          (sort-by first)
          (map second))))

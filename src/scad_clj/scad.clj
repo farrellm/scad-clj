@@ -65,8 +65,7 @@
   (list (indent depth) function "(" (make-arguments (apply vec args)) ");\n"))
 
 (defmethod write-expr :call-module-with-block [depth [form {:keys [module]} & args]]
-  (let [
-        the-args (butlast (first args))
+  (let [the-args (butlast (first args))
         block (list (last (first args)))]
     (concat
      (list (indent depth) module " (" (make-arguments (vec the-args)) ") {\n")
@@ -270,7 +269,7 @@
    (join ", "
      (concat
        (if convexity [(str "convexity=" convexity)])
-       (if angle [(str "angle=" angle )])
+       (if angle [(str "angle=" angle)])
        (if fn [(str "$fn=" fn)])))
    (list ") {\n")
    (mapcat #(write-expr (inc depth) %1) block)
