@@ -2,8 +2,8 @@
   (:refer-clojure :exclude [import use])
   (:require [clojure.walk :refer [postwalk]]
             [clojure.core.match :refer [match]]
-            [scad-clj.text :refer [text-parts]]
-            ))
+            [scad-clj.text :refer [text-parts]]))
+
 
 (def pi Math/PI)
 (def tau (* 2 pi))
@@ -101,9 +101,9 @@
 
 (defn polygon
   ([points]
-     `(:polygon {:points ~points}))
+   `(:polygon {:points ~points}))
   ([points paths & {:keys [convexity]}]
-     `(:polygon {:points ~points, :paths ~paths, :convexity ~convexity})))
+   `(:polygon {:points ~points, :paths ~paths, :convexity ~convexity})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 3D
@@ -128,9 +128,9 @@
 
 (defn polyhedron
   ([points faces]
-    `(:polyhedron {:points ~points :faces ~faces}))
+   `(:polyhedron {:points ~points :faces ~faces}))
   ([points faces & {:keys [convexity]}]
-    `(:polyhedron {:points ~points :faces ~faces :convexity ~convexity})))
+   `(:polyhedron {:points ~points :faces ~faces :convexity ~convexity})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; transformations
@@ -194,7 +194,7 @@
   `(:extrude-linear {:height ~height :twist ~twist :convexity ~convexity :center ~center :scale ~scale} ~@block))
 
 (defn extrude-rotate
-  ([ block ]
+  ([block]
    (let [args (if *fn* {:fn *fn*} {})]
      `(:extrude-rotate ~args ~block)))
   ([{:keys [convexity angle]} block]
@@ -221,7 +221,8 @@
       `(:render {:convexity ~c} ~@bl))
     `(:render {:convexity 1} ~@block)))
 
-(defn excise "like difference, but subtraction is from the last node, not the first"
+(defn excise
+  "Like difference, but subtraction is from the last node, not the first."
   [& nodes]
   (difference (last nodes) (drop-last nodes)))
 
@@ -252,7 +253,7 @@
         phi (/ (/ angle (dec n)) 2)]
     (apply union
            (map (fn [x]
-                  (let [theta (* 0.5 angle (/ x lim) )
+                  (let [theta (* 0.5 angle (/ x lim))
                         r radius
                         dx (* r (- (Math/sin theta)
                                    (* theta (Math/cos theta))))
