@@ -169,8 +169,20 @@
 (defn hull [ & block]
   `(:hull  ~@block))
 
-(defn offset [r & block]
+(defn- offset-num
+  "A narrow implementation of OpenSCAD’ offset() for radius only."
+  [r & block]
   `(:offset {:r ~r} ~@block))
+
+(defn- offset-map
+  "A broad implementation of OpenSCAD’s offset(), supporting more parameters."
+  [{:keys [r delta chamfer]} & block]
+  `(:offset ~{:r r :delta delta :chamfer chamfer} ~@block))
+
+(defn offset
+  "Implement OpenSCAD’s offset() for two different call signatures."
+  [options & block]
+  (apply (partial (if (map? options) offset-map offset-num) options) block))
 
 (defn minkowski [ & block]
   `(:minkowski ~@block))
