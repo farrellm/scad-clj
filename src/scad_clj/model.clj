@@ -187,6 +187,9 @@
 (defn minkowski [ & block]
   `(:minkowski ~@block))
 
+(defn multmatrix [m & block]
+  `(:multmatrix ~m ~@block))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Boolean operations
 
