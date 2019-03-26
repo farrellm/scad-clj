@@ -221,6 +221,16 @@
    (mapcat #(write-expr (inc depth) %1) block)
    (list (indent depth) "}\n")))
 
+(defmethod write-expr :multmatrix [depth [form m & block]]
+  (let [w (fn [s] (str "[" s "]")) ;; wrap
+        co (fn [c] (apply str (interpose "," c)))] ;; put commas in between  
+    (concat
+     (list (indent depth) "multmatrix(")
+     (w (co (map #(w (co %)) m)))
+     (list ") {\n")
+     (mapcat #(write-expr (inc depth) %1) block)
+     (list (indent depth) "}\n"))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Boolean operations
 
