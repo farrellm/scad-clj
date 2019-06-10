@@ -274,7 +274,7 @@
    (list (indent depth) "linear_extrude (height=" height)
    (if (nil? twist) [] (list ", twist=" (rad->deg twist)))
    (if (nil? convexity) [] (list ", convexity=" convexity))
-   (if (nil? scale) [] (list ", slices=" scale))
+   (if (nil? slices) [] (list ", slices=" slices))
    (if (nil? scale) [] (list ", scale=" scale))
    (when center (list ", center=true"))
    (list "){\n")
