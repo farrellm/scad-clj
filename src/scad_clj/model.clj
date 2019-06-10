@@ -177,7 +177,7 @@
 (defn- offset-map
   "A broad implementation of OpenSCAD’s offset(), supporting more parameters."
   [{:keys [r delta chamfer]} & block]
-  `(:offset ~{:r r :delta delta :chamfer chamfer} ~@block))
+  `(:offset {:r ~r :delta ~delta :chamfer ~chamfer} ~@block))
 
 (defn offset
   "Implement OpenSCAD’s offset() for two different call signatures."
