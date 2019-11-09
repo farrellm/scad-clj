@@ -275,7 +275,10 @@
    (if (nil? twist) [] (list ", twist=" (rad->deg twist)))
    (if (nil? convexity) [] (list ", convexity=" convexity))
    (if (nil? slices) [] (list ", slices=" slices))
-   (if (nil? scale) [] (list ", scale=" scale))
+   (cond
+     (nil? scale) []
+     (sequential? scale) (list ", scale=[" (first scale) ", " (second scale) "]")
+     :else (list ", scale=" scale))
    (when center (list ", center=true"))
    (list "){\n")
 
