@@ -105,8 +105,9 @@
     ~@(when convexity [", convexity=" convexity])
     ");\n"))
 
-(defmethod write-expr :text [depth [form {:keys [text size font halign valign spacing direction language script]}]]
+(defmethod write-expr :text [depth [form {:keys [text size font halign valign spacing direction language script fn]}]]
   (list (indent depth) "text (\"" text "\""
+        (when fn (str ", $fn=" fn))
         (when size (str ", size=" size))
         (when font (str ", font=\"" font "\""))
         (when halign (str ", halign=\"" halign "\""))
