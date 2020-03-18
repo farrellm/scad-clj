@@ -245,7 +245,9 @@
 ;; text
 
 (defn text [text & {:as args}]
-  (let [args (merge {:text text} args)]
+  (let [args (merge {:text text}
+                    (if *fn* {:fn *fn*})
+                    args)]
     `(:text ~args)))
 
 (defn polygon-text [font size text]
