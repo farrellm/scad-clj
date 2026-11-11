@@ -221,7 +221,7 @@
   `(:surface ~{:filepath filepath :convexity convexity :center center :invert invert}))
 
 (defn projection [cut & block]
-  `(:projection {:cut cut} ~@block))
+  `(:projection {:cut ~cut} ~@block))
 
 (defn project [& block]
   `(:projection {:cut false} ~@block))
